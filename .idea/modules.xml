@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/com.mesosphere.sdk.operator.iml" filepath="$PROJECT_DIR$/.idea/modules/com.mesosphere.sdk.operator.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/com.mesosphere.sdk.operator.main.iml" filepath="$PROJECT_DIR$/.idea/modules/com.mesosphere.sdk.operator.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/com.mesosphere.sdk.operator.test.iml" filepath="$PROJECT_DIR$/.idea/modules/com.mesosphere.sdk.operator.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/dcos-service.iml" filepath="$PROJECT_DIR$/.idea/dcos-service.iml" />
+    </modules>
+  </component>
+</project>

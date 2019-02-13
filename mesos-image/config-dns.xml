@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+<hivemq xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="hivemq-config.xsd">
+
+    <listeners>
+        <tcp-listener>
+            <port>${HIVEMQ_MQTT_PORT}</port>
+            <bind-address>0.0.0.0</bind-address>
+        </tcp-listener>
+        <!-- TODO templating TLS /WS / WSS listener, overload protection...-->
+
+
+    </listeners>
+    <control-center>
+        <listeners>
+            <http>
+                <port>${HIVEMQ_CONTROL_CENTER_PORT}</port>
+                <bind-address>0.0.0.0</bind-address>
+            </http>
+        </listeners>
+        <users>
+            <user>
+                <name>${HIVEMQ_CONTROL_CENTER_USER}</name>
+                <password>${HIVEMQ_CONTROL_CENTER_PASSWORD}</password>
+            </user>
+        </users>
+    </control-center>
+
+    <cluster>
+        <transport>
+            <tcp>
+                <bind-address>${MESOS_CONTAINER_IP}</bind-address>
+                <bind-port>${HIVEMQ_CLUSTER_PORT}</bind-port>
+            </tcp>
+        </transport>
+        <enabled>true</enabled>
+        <discovery>
+            <extension>
+                <reload-interval>${HIVEMQ_DNS_DISCOVERY_INTERVAL}</reload-interval>
+            </extension>
+        </discovery>
+
+        <replication>
+            <replica-count>2</replica-count>
+        </replication>
+    </cluster>
+
+
+    <overload-protection>
+        <enabled>true</enabled>
+    </overload-protection>
+
+    <restrictions>
+        <max-client-id-length>65535</max-client-id-length>
+        <max-topic-length>65535</max-topic-length>
+        <max-connections>-1</max-connections>
+        <incoming-bandwidth-throttling>0</incoming-bandwidth-throttling>
+        <no-connect-idle-timeout>10000</no-connect-idle-timeout>
+    </restrictions>
+
+    <mqtt>
+        <session-expiry>
+            <max-interval>3600</max-interval>
+        </session-expiry>
+
+        <packets>
+            <max-packet-size>268435460</max-packet-size>
+        </packets>
+
+        <receive-maximum>
+            <server-receive-maximum>10</server-receive-maximum>
+        </receive-maximum>
+
+        <keep-alive>
+            <max-keep-alive>65535</max-keep-alive>
+            <allow-unlimited>true</allow-unlimited>
+        </keep-alive>
+
+       <topic-alias>
+           <enabled>true</enabled>
+           <max-per-client>5</max-per-client>
+       </topic-alias>
+
+        <subscription-identifier>
+            <enabled>true</enabled>
+        </subscription-identifier>
+
+        <wildcard-subscriptions>
+            <enabled>true</enabled>
+        </wildcard-subscriptions>
+
+        <shared-subscriptions>
+            <enabled>true</enabled>
+        </shared-subscriptions>
+
+        <quality-of-service>
+            <max-qos>2</max-qos>
+        </quality-of-service>
+
+        <retained-messages>
+            <enabled>true</enabled>
+        </retained-messages>
+
+        <queued-messages>
+            <max-queue-size>1000</max-queue-size>
+            <strategy>discard</strategy>
+        </queued-messages>
+    </mqtt>
+
+    <security>
+        <!-- Allows the use of empty client ids -->
+        <allow-empty-client-id>
+            <enabled>true</enabled>
+        </allow-empty-client-id>
+
+        <!-- Disables validation for UTF-8 PUBLISH payloads -->
+        <payload-format-validation>
+            <enabled>false</enabled>
+        </payload-format-validation>
+
+        <utf8-validation>
+            <enabled>true</enabled>
+        </utf8-validation>
+
+        <!-- Allows clients to request problem information -->
+        <allow-request-problem-information>
+            <enabled>true</enabled>
+        </allow-request-problem-information>
+    </security>
+</hivemq>

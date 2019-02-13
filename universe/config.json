@@ -72,7 +72,7 @@
       ]
     },
     "node": {
-      "description": "hivemq pod configuration properties",
+      "description": "HiveMQ pod configuration properties",
       "type": "object",
       "properties": {
         "count": {
@@ -131,6 +131,104 @@
         "disk",
         "disk_type"
       ]
+    },
+    "hivemq": {
+      "description": "HiveMQ specific configuration properties",
+      "type": "object",
+      "properties": {
+        "cluster_replica_count": {
+          "title": "Cluster replica count",
+          "description": "Number of cluster replica",
+          "type": "integer",
+          "default": 2,
+          "minimum": 1
+        },
+        "cluster_overload_protection": {
+          "title": "Cluster overload protection",
+          "description": "Enable cluster overload protection",
+          "type": "boolean",
+          "default": true
+        },
+        "max_client_id_length": {
+          "title": "Max client id length",
+          "description": "Maximum client id length in bytes",
+          "type": "integer",
+          "default": 65535
+        },
+        "max_topic_length": {
+          "title": "Max topic length",
+          "description": "Maximum topic length in bytes",
+          "type": "integer",
+          "default": 65535
+        },
+        "max_connections": {
+          "title": "Max connections",
+          "description": "Maximum total MQTT connections for a single broker",
+          "type": "integer",
+          "default": -1
+        },
+        "incoming_bandwidth_throttling": {
+          "title": "Incoming bandwidth throttling",
+          "description": "Incoming bandwidth maximum bytes per second",
+          "type": "integer",
+          "default": 0
+        },
+        "no_connect_idle_timeout": {
+          "title": "CONNECT idle timeout",
+          "description": "Timeout in milliseconds before disconnecting a client which doesn't send a CONNECT packet",
+          "type": "integer",
+          "default": 10000
+        },
+        "session_expiry_interval": {
+          "title": "Session expiry interval",
+          "description": "Duration (in seconds) that has to pass after the client disconnected, before its session expires",
+          "type": "integer",
+          "default": 4294967296
+        },
+        "max_packet_size": {
+          "title": "Max packet size",
+          "description": "The maximum size of any MQTT packet in bytes that will be accepted by the broker",
+          "type": "integer",
+          "default": 268435460
+        },
+        "server_receive_maximum": {
+          "title": "Server receive maximum",
+          "description": "The maximum amount of PUBLISH messages, which have not yet been acknowledged by the broker, each client is allowed to send",
+          "type": "integer",
+          "default": 10
+        },
+        "keepalive_max": {
+          "title": "Keep alive maximum",
+          "description": "The maximum value of the keepAlive field in the CONNECT packet of the client that will be accepted by the broker",
+          "type": "integer",
+          "default": 65535
+        },
+        "keepalive_allow_unlimited": {
+          "title": "Keep alive allow unlimited",
+          "description": "Whether or not the broker will accept connections by clients that sent a CONNECT packet with a keepAlive=0 setting",
+          "type": "boolean",
+          "default": true
+        },
+        "topic_alias_enabled": {
+          "title": "Topic alias enabled",
+          "description": "Whether or not the broker will allow MQTT 5 clients to use topic-alias",
+          "type": "boolean",
+          "default": true
+        },
+        "topic_alias_max_per_client": {
+          "title": "Topic alias max per client",
+          "description": "Maximum topic aliases a single client can use",
+          "type": "integer",
+          "default": 5
+        },
+        "subscription_identifier_enabled": {
+          "title": "Subscription identifier enabled",
+          "description": "Whether or not the broker will allow MQTT 5 clients to use subscription identifiers",
+          "type": "boolean",
+          "default": true
+        },
+
+      }
     }
   }
 }
