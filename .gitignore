@@ -24,8 +24,8 @@ hs_err_pid*
 
 java/scheduler/.gradle
 java/scheduler/build
-/mesos-image/hivemq-dns-cluster-discovery/
-/mesos-image/hivemq-dns-cluster-discovery/hivemq-extension.xml
+/dcos-image/hivemq-dns-cluster-discovery/
+/dcos-image/hivemq-dns-cluster-discovery/hivemq-extension.xml
 
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and WebStorm

@@ -149,86 +149,213 @@
           "type": "boolean",
           "default": true
         },
-        "max_client_id_length": {
-          "title": "Max client id length",
-          "description": "Maximum client id length in bytes",
-          "type": "integer",
-          "default": 65535
-        },
-        "max_topic_length": {
-          "title": "Max topic length",
-          "description": "Maximum topic length in bytes",
-          "type": "integer",
-          "default": 65535
-        },
-        "max_connections": {
-          "title": "Max connections",
-          "description": "Maximum total MQTT connections for a single broker",
-          "type": "integer",
-          "default": -1
-        },
-        "incoming_bandwidth_throttling": {
-          "title": "Incoming bandwidth throttling",
-          "description": "Incoming bandwidth maximum bytes per second",
-          "type": "integer",
-          "default": 0
-        },
-        "no_connect_idle_timeout": {
-          "title": "CONNECT idle timeout",
-          "description": "Timeout in milliseconds before disconnecting a client which doesn't send a CONNECT packet",
-          "type": "integer",
-          "default": 10000
-        },
-        "session_expiry_interval": {
-          "title": "Session expiry interval",
-          "description": "Duration (in seconds) that has to pass after the client disconnected, before its session expires",
-          "type": "integer",
-          "default": 4294967296
-        },
-        "max_packet_size": {
-          "title": "Max packet size",
-          "description": "The maximum size of any MQTT packet in bytes that will be accepted by the broker",
-          "type": "integer",
-          "default": 268435460
-        },
-        "server_receive_maximum": {
-          "title": "Server receive maximum",
-          "description": "The maximum amount of PUBLISH messages, which have not yet been acknowledged by the broker, each client is allowed to send",
-          "type": "integer",
-          "default": 10
-        },
-        "keepalive_max": {
-          "title": "Keep alive maximum",
-          "description": "The maximum value of the keepAlive field in the CONNECT packet of the client that will be accepted by the broker",
-          "type": "integer",
-          "default": 65535
-        },
-        "keepalive_allow_unlimited": {
-          "title": "Keep alive allow unlimited",
-          "description": "Whether or not the broker will accept connections by clients that sent a CONNECT packet with a keepAlive=0 setting",
-          "type": "boolean",
-          "default": true
-        },
-        "topic_alias_enabled": {
-          "title": "Topic alias enabled",
-          "description": "Whether or not the broker will allow MQTT 5 clients to use topic-alias",
-          "type": "boolean",
-          "default": true
-        },
-        "topic_alias_max_per_client": {
-          "title": "Topic alias max per client",
-          "description": "Maximum topic aliases a single client can use",
-          "type": "integer",
-          "default": 5
-        },
-        "subscription_identifier_enabled": {
-          "title": "Subscription identifier enabled",
-          "description": "Whether or not the broker will allow MQTT 5 clients to use subscription identifiers",
-          "type": "boolean",
-          "default": true
-        },
 
-      }
+        "restrictions": {
+          "description": "Restrictions to limit the load on a broker",
+          "type": "object",
+          "properties": {
+            "max_client_id_length": {
+              "title": "Max client id length",
+              "description": "Maximum client id length in bytes",
+              "type": "integer",
+              "default": 65535
+            },
+            "max_topic_length": {
+              "title": "Max topic length",
+              "description": "Maximum topic length in bytes",
+              "type": "integer",
+              "default": 65535
+            },
+            "max_connections": {
+              "title": "Max connections",
+              "description": "Maximum total MQTT connections for a single broker",
+              "type": "integer",
+              "default": -1,
+              "minimum": -1
+            },
+            "incoming_bandwidth_throttling": {
+              "title": "Incoming bandwidth throttling",
+              "description": "Incoming bandwidth maximum bytes per second",
+              "type": "integer",
+              "default": 0,
+              "minimum": 0
+            },
+            "no_connect_idle_timeout": {
+              "title": "CONNECT idle timeout",
+              "description": "Timeout in milliseconds before disconnecting a client which doesn't send a CONNECT packet",
+              "type": "integer",
+              "default": 10000
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "no_connect_idle_timeout",
+            "max_topic_length",
+            "max_client_id_length",
+            "max_connections",
+            "incoming_bandwidth_throttling"
+          ]
+        },
+        "mqtt": {
+          "description": "MQTT specific options",
+          "type": "object",
+          "properties": {
+            "session_expiry_interval": {
+              "title": "Session expiry interval",
+              "description": "Duration (in seconds) that has to pass after the client disconnected, before its session expires",
+              "type": "integer",
+              "default": 4294967296,
+              "minimum": 0
+            },
+            "max_packet_size": {
+              "title": "Max packet size",
+              "description": "The maximum size of any MQTT packet in bytes that will be accepted by the broker",
+              "type": "integer",
+              "default": 268435460
+            },
+            "server_receive_maximum": {
+              "title": "Server receive maximum",
+              "description": "The maximum amount of PUBLISH messages, which have not yet been acknowledged by the broker, each client is allowed to send",
+              "type": "integer",
+              "default": 10
+            },
+            "keepalive_max": {
+              "title": "Keep alive maximum",
+              "description": "The maximum value of the keepAlive field in the CONNECT packet of the client that will be accepted by the broker",
+              "type": "integer",
+              "default": 65535
+            },
+            "keepalive_allow_unlimited": {
+              "title": "Keep alive allow unlimited",
+              "description": "Whether or not the broker will accept connections by clients that sent a CONNECT packet with a keepAlive=0 setting",
+              "type": "boolean",
+              "default": true
+            },
+            "topic_alias_enabled": {
+              "title": "Topic alias enabled",
+              "description": "Whether or not the broker will allow MQTT 5 clients to use topic-alias",
+              "type": "boolean",
+              "default": true
+            },
+            "topic_alias_max_per_client": {
+              "title": "Topic alias max per client",
+              "description": "Maximum topic aliases a single client can use",
+              "type": "integer",
+              "default": 5
+            },
+            "subscription_identifier_enabled": {
+              "title": "Subscription identifier",
+              "description": "Whether or not the broker will allow MQTT 5 clients to use subscription identifiers",
+              "type": "boolean",
+              "default": true
+            },
+            "wildcard_subscription_enabled": {
+              "title": "Wildcard subscriptions",
+              "description": "Whether or not the wildcard subscription feature is enabled on the broker",
+              "type": "boolean",
+              "default": true
+            },
+            "shared_subscription_enabled": {
+              "title": "Shared subscriptions",
+              "description": "Whether or not the shared subscription feature is enabled on the broker",
+              "type": "boolean",
+              "default": true
+            },
+            "retained_messages_enabled": {
+              "title": "Retained messages",
+              "description": "Whether or not the retained message feature is enabled on the broker",
+              "type": "boolean",
+              "default": true
+            },
+            "max_qos": {
+              "title": "Max QoS",
+              "description": "Whether or not the shared subscription feature is enabled on the broker",
+              "type": "integer",
+              "default": 2,
+              "minimum": 0,
+              "maximum": 2
+            },
+            "queued_message_max_queue_size": {
+              "title": "Queued messages max queue size",
+              "description": "Maximum amount of messages per client that will be stored on the broker",
+              "type": "integer",
+              "default": 1000,
+              "minimum": 0
+            },
+            "queued_message_strategy": {
+              "title": "Queued messages strategy",
+              "description": "Discard strategy when message arrives at the broker and the corresponding client’s message queue is full.\ndiscard for discarding newly arriving messages. discard-oldest to discard the oldest message in the queue when a new message arrives",
+              "type": "string",
+              "default": "discard",
+              "enum": [
+                "discard",
+                "discard_oldest"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "queued_message_strategy",
+            "queued_message_max_queue_size",
+            "max_qos",
+            "retained_messages_enabled",
+            "shared_subscription_enabled",
+            "wildcard_subscription_enabled",
+            "subscription_identifier_enabled",
+            "topic_alias_max_per_client",
+            "topic_alias_enabled",
+            "keepalive_allow_unlimited",
+            "keepalive_max",
+            "server_receive_maximum",
+            "max_packet_size",
+            "session_expiry_interval"
+          ]
+        },
+        "security": {
+          "type": "object",
+          "description": "Security configuration",
+          "properties": {
+            "allow_empty_client_id": {
+              "title": "Allow empty client id",
+              "description": "Allows the use of empty client ids. If this is set to true, HiveMQ automatically generates random client ids, when clientId in the CONNECT packet is empty",
+              "type": "boolean",
+              "default": true
+            },
+            "payload_format_validation": {
+              "title": "Payload UTF-8 validation",
+              "description": "Enables the UTF-8 validation of UTF-8 PUBLISH payloads",
+              "type": "boolean",
+              "default": false
+            },
+            "topic_format_validation": {
+              "title": "Topic UTF-8 validation",
+              "description": "Enables the UTF-8 validation of topic names and client ids",
+              "type": "boolean",
+              "default": true
+            },
+            "allow_request_problem_information": {
+              "title": "Request problem information",
+              "description": "Allows the client to request the problem information. If this is set to false, no reason string and user property values will be sent to clients",
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "allow_empty_client_id",
+            "payload_format_validation",
+            "topic_format_validation",
+            "allow_request_problem_information"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "cluster_replica_count",
+        "cluster_overload_protection",
+        "mqtt",
+        "security"
+      ]
     }
   }
 }
