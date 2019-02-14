@@ -29,10 +29,11 @@ pods:
 
           export JAVA_HOME=$MESOS_SANDBOX/jdk-11.0.2+9-jre
 
-          cp -rp dcos_files/* $MESOS_SANDBOX/hivemq/
+          # TODO template the version
+          cp -rp dcos_files/* $MESOS_SANDBOX/hivemq-4.0.2/
           # TODO template out these java_opts?
 
-          JAVA_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseNUMA" exec $MESOS_SANDBOX/hivemq/bin/run_dcos.sh
+          JAVA_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseNUMA" exec $MESOS_SANDBOX/hivemq-4.0.2/bin/run_dcos.sh
         cpus: {{NODE_CPUS}}
         configs:
           logback:
