@@ -79,13 +79,7 @@
           "title": "Node count",
           "description": "Number of hivemq pods to run",
           "type": "integer",
-          "default":  2
-        },
-        "image": {
-          "title": "HiveMQ image",
-          "description": "Image to use for the hivemq pods",
-          "type": "string",
-          "default": "sbaier1/hivemq-mtest20:latest"
+          "default":  3
         },
         "placement_constraint": {
           "title": "Placement constraint",
@@ -136,6 +130,20 @@
       "description": "HiveMQ specific configuration properties",
       "type": "object",
       "properties": {
+        "hivemq_log_level": {
+          "description": "The log level for HiveMQ.",
+          "type": "string",
+          "enum": [
+            "OFF",
+            "ERROR",
+            "WARN",
+            "INFO",
+            "DEBUG",
+            "TRACE",
+            "ALL"
+          ],
+          "default": "INFO"
+        },
         "cluster_replica_count": {
           "title": "Cluster replica count",
           "description": "Number of cluster replica",

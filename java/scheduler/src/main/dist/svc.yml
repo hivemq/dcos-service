@@ -4,7 +4,6 @@ scheduler:
   user: {{FRAMEWORK_USER}}
 pods:
   hivemq:
-    image: {{HIVEMQ_IMAGE}}
     count: {{NODE_COUNT}}
     allow-decommission: true
     placement: '{{{NODE_PLACEMENT}}}'
@@ -14,13 +13,32 @@ pods:
     labels: {{VIRTUAL_NETWORK_PLUGIN_LABELS}}
     {{/ENABLE_VIRTUAL_NETWORK}}
     uris:
+      - {{HIVEMQ_JRE_URI}}
+      - {{HIVEMQ_DCOS_URI}}
       - {{HIVEMQ_URI}}
+      - {{BOOTSTRAP_URI}}
     tasks:
       node:
         goal: RUNNING
         cmd: |
-          exec /opt/hivemq/bin/run.sh
+          set -e
+          set -o xtrace
+          ls -la $MESOS_SANDBOX
+
+          ./bootstrap -resolve=false
+
+          export JAVA_HOME=$MESOS_SANDBOX/jdk-11.0.2+9-jre
+
+          cp -rp dcos_files/* $MESOS_SANDBOX/hivemq/
+          # TODO template out these java_opts?
+
+          JAVA_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseNUMA" exec $MESOS_SANDBOX/hivemq/bin/run_dcos.sh
         cpus: {{NODE_CPUS}}
+        configs:
+          logback:
+            template: logback.xml
+            # TODO template the version
+            dest: hivemq-4.0.2/conf/logback.xml
         memory: {{NODE_MEM}}
         volume:
           path: "test-container-path"

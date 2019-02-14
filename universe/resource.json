@@ -9,7 +9,8 @@
       "scheduler-zip": "https://ecosystem-repo.s3.amazonaws.com/sdk/artifacts/0.55.2/operator-scheduler.zip",
       "svc": "http://minio.marathon.l4lb.thisdcos.directory:9000/artifacts/hivemq/svc.yml",
       "hivemq-jre": "https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk11u-2019-02-03-10-04/OpenJDK11U-jre_x64_linux_hotspot_2019-02-03-10-04.tar.gz",
-      "hivemq": "http://minio.marathon.l4lb.thisdcos.directory:9000/artifacts/hivemq.zip"
+      "hivemq-dcos": "http://minio.marathon.l4lb.thisdcos.directory:9000/artifacts/hivemq/dcos_files.zip",
+      "hivemq": "http://hivemq.com/releases/hivemq-4.0.2.zip"
     }
   },
   "images": {

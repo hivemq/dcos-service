@@ -14,7 +14,7 @@ ENV HIVEMQ_CONTROL_CENTER_PASSWORD a68fc32fc49fc4d04c63724a1f6d0c90442209c46dba6
 COPY config-dns.xml /opt/hivemq/conf/config.xml
 COPY run.sh /opt/hivemq/bin/run.sh
 COPY healthcheck /opt/hivemq/bin/healthcheck
-COPY logback.xml /opt/hivemq/conf/logback.xml
+COPY logback.xml /opt/hivemq/logback.xml
 COPY bootstrap /opt/hivemq/bin/bootstrap
 
 COPY docker-entrypoint.sh /opt/docker-entrypoint.sh
