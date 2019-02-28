@@ -116,6 +116,12 @@
             "MOUNT"
           ],
           "default": "ROOT"
+        },
+        "version": {
+          "title": "Version of HiveMQ",
+          "description": "Version of HiveMQ to install",
+          "type" : "string",
+          "default": "4.0.2"
         }
       },
       "required": [

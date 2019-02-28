@@ -53,14 +53,14 @@ pods:
           HIVEMQ_CONTROL_CENTER_USER: admin
           HIVEMQ_CONTROL_CENTER_PASSWORD: a68fc32fc49fc4d04c63724a1f6d0c90442209c46dba6975774cde5e5149caf8
         health-check:
-          cmd: "exec /opt/hivemq/bin/healthcheck"
+          cmd: "exec $MESOS_SANDBOX/hivemq-4.0.2/bin/healthcheck"
           interval: 60
           grace-period: 60
           max-consecutive-failures: 60
           delay: 10
           timeout: 30
         readiness-check:
-          cmd: "exec /opt/hivemq/bin/healthcheck"
+          cmd: "exec $MESOS_SANDBOX/hivemq-4.0.2/bin/healthcheck"
           interval: 60
           delay: 30
           timeout: 30
