@@ -2,24 +2,6 @@
 
 Requires [dcosdev](https://github.com/mesosphere/dcosdev) for development
 
-## Rolling Upgrade
-
-A rolling upgrade has to be performed in 2 steps (as of now):
-
-1. Update the image, while also incrementing your node count. For example, for a 3 node cluster, in order to update to HiveMQ 4.0.2:
-
-```
-echo '{"node": { "count": 4, "image": "hivemq/hivemq4:dcos-4.0.2"}}' | dcos hivemq update start --options=stdin
-```
-
-2. After the update completes (can be monitored using `dcos hivemq --name=hivemq update status`), decrement the node count again, to remove the additional update node:
-
-```
-echo '{"node": { "count": 3}}' | dcos hivemq update start --options=stdin
-```
-
-Alternatively these steps can also be performed using the edit view from the DCOS Web UI.
-
 ## Accessing the Control Center
 
 ### DNS name
@@ -35,10 +17,13 @@ TODO: how to get MLB to forward requests to one or more of the pod instances?
 You can also use the `dcos` CLI's proxy feature to connect to the control center of a single broker directly:
 
 ```
-dcos node ssh --master-proxy --mesos-id=<node> --option LocalForward=<remote-port>=localhost:8080
+mesos_id=$(dcos task hivemq --json | jq -r '.[] | select (.name == "hivemq-0-node").slave_id')
+port=$(dcos task hivemq --json  | jq '.[].discovery | select(.name == "hivemq-0") | .ports[] | .[] | select(.name == "control-center").number')
+dcos node ssh --master-proxy --mesos-id=$mesos_id --option LocalForward=$port=localhost:$port
 ```
 
-where `<node>` is the DCOS agent the broker is running on and `<remote-port>` is the random port assigned to the broker's control center. The port is visible in the service's endpoint list.
+This will forward the control center port (will be displayed when the SSH tunnel is established) to localhost, allowing you to access the control center of a single HiveMQ node.
+
 
 ## TLS
 

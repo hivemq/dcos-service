@@ -38,6 +38,8 @@ fi
 
 if [ ! -d "$HIVEMQ_FOLDER" ]; then
     echo ERROR! HiveMQ Home Folder not found.
+elif [ ! -d "$MESOS_SANDBOX" ]; then
+    echo ERROR! Mesos sandbox undefined. Is this a DCOS system?
 else
 
     if [ ! -w "$HIVEMQ_FOLDER" ]; then
@@ -50,7 +52,7 @@ else
         else
             HIVEMQ_FOLDER=$(echo "$HIVEMQ_FOLDER" | sed 's/ /\\ /g')
             JAVA_OPTS="$JAVA_OPTS -XX:+CrashOnOutOfMemoryError"
-            JAVA_OPTS="$JAVA_OPTS -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=$HIVEMQ_FOLDER/heap-dump.hprof"
+            JAVA_OPTS="$JAVA_OPTS -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=$MESOS_SANDBOX/hivemq-data/heap-dump.hprof"
 
             echo "-------------------------------------------------------------------------"
             echo ""

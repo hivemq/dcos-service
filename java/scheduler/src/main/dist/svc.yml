@@ -5,62 +5,79 @@ scheduler:
 pods:
   hivemq:
     count: {{NODE_COUNT}}
-    allow-decommission: true
     placement: '{{{NODE_PLACEMENT}}}'
     {{#ENABLE_VIRTUAL_NETWORK}}
       networks:
         {{VIRTUAL_NETWORK_NAME}}:
     labels: {{VIRTUAL_NETWORK_PLUGIN_LABELS}}
     {{/ENABLE_VIRTUAL_NETWORK}}
+    resource-sets:
+      sidecar-resources:
+        cpus: 0.1
+        memory: 128
     uris:
       - {{HIVEMQ_JRE_URI}}
       - {{HIVEMQ_DCOS_URI}}
       - {{HIVEMQ_URI}}
       - {{BOOTSTRAP_URI}}
+    volume:
+      path: "hivemq-data"
+      type: {{NODE_DISK_TYPE}}
+      size: {{NODE_DISK}}
     tasks:
       node:
         goal: RUNNING
         cmd: |
           set -e
           set -o xtrace
-          ls -la $MESOS_SANDBOX
-
-          ./bootstrap -resolve=false
+          ln -s $MESOS_SANDBOX/hivemq-${HIVEMQ_VERSION} $MESOS_SANDBOX/hivemq
 
           export JAVA_HOME=$MESOS_SANDBOX/jdk-11.0.2+9-jre
+          export HIVEMQ_DATA_FOLDER=$MESOS_SANDBOX/hivemq-data
 
-          # TODO template the version
-          cp -rp dcos_files/* $MESOS_SANDBOX/hivemq-4.0.2/
-          # TODO template out these java_opts?
+          mkdir -p $MESOS_SANDBOX/hivemq-data/extensions
+          mkdir -p $MESOS_SANDBOX/hivemq-data/conf
+          mkdir -p $MESOS_SANDBOX/hivemq-data/license
+          rm -rf $MESOS_SANDBOX/hivemq-4.0.2/extensions
+          rm -rf $MESOS_SANDBOX/hivemq-4.0.2/conf
+          rm -rf $MESOS_SANDBOX/hivemq-4.0.2/license
+          ln -s $MESOS_SANDBOX/hivemq-data/extensions $MESOS_SANDBOX/hivemq/extensions
+          ln -s $MESOS_SANDBOX/hivemq-data/conf $MESOS_SANDBOX/hivemq/conf
+          ln -s $MESOS_SANDBOX/hivemq-data/license $MESOS_SANDBOX/hivemq/license
 
-          JAVA_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseNUMA" exec $MESOS_SANDBOX/hivemq-4.0.2/bin/run_dcos.sh
+          # initial license setup
+          if [ -n "$HIVEMQ_LICENSE" ]; then
+            echo "$HIVEMQ_LICENSE" | base64 -d > $MESOS_SANDBOX/hivemq/license/default.lic
+          fi
+          # set control center login
+          export HIVEMQ_CONTROL_CENTER_USER="${HIVEMQ_CC_USER}"
+          export HIVEMQ_CONTROL_CENTER_PASSWORD="$(echo -n "${HIVEMQ_CC_USER}${HIVEMQ_CC_PASSWORD}" | sha256sum | awk '{ print $1 }')"
+
+          cp -rp dcos_files/bin/* $MESOS_SANDBOX/hivemq/bin
+          cp -rp dcos_files/conf/* $MESOS_SANDBOX/hivemq/conf
+          cp -rp dcos_files/extensions/* $MESOS_SANDBOX/hivemq/extensions
+          ./bootstrap -resolve=false
+
+          JAVA_OPTS=${HIVEMQ_JAVA_OPTS} exec $MESOS_SANDBOX/hivemq/bin/run_dcos.sh
         cpus: {{NODE_CPUS}}
+        memory: {{NODE_MEM}}
         configs:
           logback:
             template: logback.xml
-            # TODO template the version
-            dest: hivemq-4.0.2/conf/logback.xml
-        memory: {{NODE_MEM}}
-        volume:
-          path: "test-container-path"
-          type: {{NODE_DISK_TYPE}}
-          size: {{NODE_DISK}}
+            dest: hivemq-data/conf/logback.xml
         discovery:
           prefix: {{FRAMEWORK_NAME}}
-        labels: "HAPROXY_GROUP:external"
         env:
           HIVEMQ_DNS_DISCOVERY_INTERVAL: 30
-          HIVEMQ_CONTROL_CENTER_USER: admin
-          HIVEMQ_CONTROL_CENTER_PASSWORD: a68fc32fc49fc4d04c63724a1f6d0c90442209c46dba6975774cde5e5149caf8
         health-check:
-          cmd: "exec $MESOS_SANDBOX/hivemq-4.0.2/bin/healthcheck"
+          cmd: "exec $MESOS_SANDBOX/hivemq/bin/healthcheck"
           interval: 60
           grace-period: 60
           max-consecutive-failures: 60
           delay: 10
           timeout: 30
         readiness-check:
-          cmd: "exec $MESOS_SANDBOX/hivemq-4.0.2/bin/healthcheck"
+          cmd: "exec $MESOS_SANDBOX/hivemq/bin/healthcheck"
           interval: 60
           delay: 30
           timeout: 30
@@ -79,16 +96,85 @@ pods:
             port: 0
             env-key: HIVEMQ_CONTROL_CENTER_PORT
             advertise: true
+      # add plugin via URL
+      add-plugin:
+        goal: ONCE
+        resource-set: sidecar-resources
+        cmd: |
+          set -e
+
+          echo "Downloading zip from $URL"
+          ls -la
+          cd $MESOS_SANDBOX
+          ls -la
+          curl $URL -o extension.zip
+          mkdir -p extension_tmp
+          unzip extension.zip -d extension_tmp/
+          mv extension_tmp/* hivemq-data/extensions/
+          rm -rf extension_tmp
+      # add license via base64 encoded file
+      add-license:
+        goal: ONCE
+        resource-set: sidecar-resources
+        cmd: |
+          set -e
+
+          if [ -z "$LICENSE_NAME" ]; then
+            echo "Must provide a license name"
+            exit 1
+          fi
+          echo $LICENSE | base64 -d > hivemq-data/license/$LICENSE_NAME.lic
+      # add arbitrary configurations for extensions
+      add-config:
+        goal: ONCE
+        resource-set: sidecar-resources
+        cmd: |
+          set -e
+          if [ -z "$PATH" ]; then
+            echo "Must provide a path relative to the extensions directory for the file"
+            exit 1
+          fi
+          echo "$FILE_CONTENT" | base64 -d > hivemq-data/extensions/$PATH
+      disable-plugin:
+        goal: ONCE
+        resource-set: sidecar-resources
+        cmd: |
+          set -e
+          if [ -z "$PLUGIN" ]; then
+            echo "Must provide a plugin name"
+            exit 1
+          fi
+          touch hivemq-data/extensions/$PLUGIN/DISABLED
 plans:
   deploy:
-    strategy: serial
+    strategy: parallel
     phases:
       node:
-        strategy: serial
+        strategy: parallel
         pod: hivemq
+        steps:
+          - default: [[node]]
   update:
     strategy: serial
     phases:
       rolling-upgrade:
         strategy: serial
         pod: hivemq
+        steps:
+          - default: [[node]]
+  add-plugin:
+    strategy: parallel
+    phases:
+      install:
+        strategy: parallel
+        pod: hivemq
+        steps:
+          - default: [[add-plugin]]
+  add-license:
+    strategy: parallel
+    phases:
+      install:
+        strategy: parallel
+        pod: hivemq
+        steps:
+          - default: [[add-license]]

@@ -116,12 +116,6 @@
             "MOUNT"
           ],
           "default": "ROOT"
-        },
-        "version": {
-          "title": "Version of HiveMQ",
-          "description": "Version of HiveMQ to install",
-          "type" : "string",
-          "default": "4.0.2"
         }
       },
       "required": [
@@ -150,6 +144,16 @@
           ],
           "default": "INFO"
         },
+        "java_options": {
+          "description": "JAVA_OPTS to pass to the java process",
+          "type": "string",
+          "default": "-XX:+UnlockExperimentalVMOptions -XX:+UseNUMA"
+        },
+        "license": {
+          "type": "string",
+          "description": "Add a (base64 encoded) license at startup, leave empty to start in evaluation mode",
+          "default": ""
+        },
         "cluster_replica_count": {
           "title": "Cluster replica count",
           "description": "Number of cluster replica",
@@ -163,7 +167,24 @@
           "type": "boolean",
           "default": true
         },
-
+        "control_center_enabled": {
+          "title": "Control Center enabled",
+          "description": "Enable control center",
+          "type": "boolean",
+          "default": true
+        },
+        "control_center_user": {
+          "title": "Control Center user",
+          "description": "User for the control center login",
+          "type": "string",
+          "default": "admin"
+        },
+        "control_center_password": {
+          "title": "Control Center password",
+          "description": "Password for the control center login",
+          "type": "string",
+          "default": "hivemq"
+        },
         "restrictions": {
           "description": "Restrictions to limit the load on a broker",
           "type": "object",
@@ -209,9 +230,26 @@
             "max_connections",
             "incoming_bandwidth_throttling"
           ]
-        },
-        "mqtt": {
-          "description": "MQTT specific options",
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "cluster_replica_count",
+        "cluster_overload_protection",
+        "control_center_enabled",
+        "control_center_user",
+        "control_center_password",
+        "restrictions",
+        "java_options"
+      ]
+    },
+    "mqtt": {
+      "description": "MQTT specific configuration properties",
+      "type": "object",
+      "properties": {
+
+        "limits": {
+          "description": "Limits and toggles for specific protocol features",
           "type": "object",
           "properties": {
             "session_expiry_interval": {
@@ -365,9 +403,7 @@
       },
       "additionalProperties": false,
       "required": [
-        "cluster_replica_count",
-        "cluster_overload_protection",
-        "mqtt",
+        "limits",
         "security"
       ]
     }

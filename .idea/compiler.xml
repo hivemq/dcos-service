@@ -12,7 +12,7 @@
     <bytecodeTargetLevel>
       <module name="com.mesosphere.sdk.operator.main" target="1.8" />
       <module name="com.mesosphere.sdk.operator.test" target="1.8" />
-      <module name="hivemq-dcos" target="11" />
+      <module name="hivemq-dcos" target="8" />
     </bytecodeTargetLevel>
   </component>
 </project>
