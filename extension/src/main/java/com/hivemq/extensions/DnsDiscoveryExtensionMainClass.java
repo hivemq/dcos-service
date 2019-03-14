@@ -18,6 +18,7 @@ package com.hivemq.extensions;
 
 import com.hivemq.extension.sdk.api.ExtensionMain;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
+import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStartInput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStartOutput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopInput;
@@ -35,7 +36,7 @@ import com.hivemq.extensions.metrics.StatsDMetrics;
  */
 public class DnsDiscoveryExtensionMainClass implements ExtensionMain {
 
-    private StatsDMetrics statsdReporter;
+    private @Nullable StatsDMetrics statsdReporter;
 
     @Override
     public void extensionStart(@NotNull ExtensionStartInput extensionStartInput, @NotNull ExtensionStartOutput extensionStartOutput) {
@@ -47,6 +48,11 @@ public class DnsDiscoveryExtensionMainClass implements ExtensionMain {
                 return;
             }
             Services.clusterService().addDiscoveryCallback(new DnsClusterDiscovery(new DnsDiscoveryConfigExtended(configurationReader)));
+            final String metricsEnabled = System.getenv("HIVEMQ_METRICS_ENABLED");
+            if("true".equals(metricsEnabled)) {
+                statsdReporter = new StatsDMetrics(Services.metricRegistry());
+                statsdReporter.startReporter();
+            }
         } catch (final Exception e) {
             extensionStartOutput.preventExtensionStartup("Unknown error while starting the extensions" + ((e.getMessage() != null) ? ": " + e.getMessage() : ""));
             return;
@@ -55,7 +61,9 @@ public class DnsDiscoveryExtensionMainClass implements ExtensionMain {
 
     @Override
     public void extensionStop(@NotNull ExtensionStopInput extensionStopInput, @NotNull ExtensionStopOutput extensionStopOutput) {
-        // NOOP
+        if(statsdReporter != null) {
+            statsdReporter.stopReporter();
+        }
     }
 }
 

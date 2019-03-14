@@ -7,7 +7,6 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/com.mesosphere.sdk.operator.test.iml" filepath="$PROJECT_DIR$/.idea/modules/com.mesosphere.sdk.operator.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/dcos-service.iml" filepath="$PROJECT_DIR$/.idea/dcos-service.iml" />
       <module fileurl="file://$PROJECT_DIR$/extension/hivemq-dcos.iml" filepath="$PROJECT_DIR$/extension/hivemq-dcos.iml" />
-      <module fileurl="file://$PROJECT_DIR$/java/extension/hivemq-dcos.iml" filepath="$PROJECT_DIR$/java/extension/hivemq-dcos.iml" />
     </modules>
   </component>
 </project>

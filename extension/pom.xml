@@ -20,7 +20,13 @@
 
     <groupId>com.hivemq.extension</groupId>
     <artifactId>hivemq-dcos</artifactId>
-    <version>4.0.1</version>
+    <version>1.0.0</version>
+    <repositories>
+        <repository>
+            <id>jcenter</id>
+            <url>https://jcenter.bintray.com/</url>
+        </repository>
+    </repositories>
 
     <properties>
         <extension.name>DCOS Extension</extension.name>
@@ -73,9 +79,14 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.basistech</groupId>
-            <artifactId>metrics-statsd</artifactId>
-            <version>3.0.0</version>
+            <groupId>com.readytalk</groupId>
+            <artifactId>metrics-statsd-common</artifactId>
+            <version>4.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.readytalk</groupId>
+            <artifactId>metrics3-statsd</artifactId>
+            <version>4.2.0</version>
         </dependency>
     </dependencies>
 

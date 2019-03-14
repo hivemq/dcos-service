@@ -1,4 +1,3 @@
-
 {
   "type": "object",
   "properties": {
@@ -79,7 +78,7 @@
           "title": "Node count",
           "description": "Number of hivemq pods to run",
           "type": "integer",
-          "default":  3
+          "default": 3
         },
         "placement_constraint": {
           "title": "Placement constraint",
@@ -94,7 +93,8 @@
           "title": "CPU count",
           "description": "hivemq pod CPU requirements",
           "type": "number",
-          "default": 1
+          "default": 1,
+          "minimum": 1
         },
         "mem": {
           "title": "Memory size (MB)",
@@ -185,6 +185,19 @@
           "type": "string",
           "default": "hivemq"
         },
+        "metrics_enabled": {
+          "title": "Push metrics",
+          "description": "Push HiveMQ metrics to the DCOS StatsD agent, for use with e.g. Prometheus on DCOS",
+          "type": "boolean",
+          "default": true
+        },
+        "metrics_interval": {
+          "title": "Metrics push interval",
+          "description": "Metrics push interval (resolution) in seconds for HiveMQ metrics. Note that if you are using Prometheus, you may need to adjust the Prometheus scrape configuration as well in order to get higher resolution",
+          "type": "integer",
+          "default": 5,
+          "minimum": 1
+        },
         "restrictions": {
           "description": "Restrictions to limit the load on a broker",
           "type": "object",
@@ -247,7 +260,6 @@
       "description": "MQTT specific configuration properties",
       "type": "object",
       "properties": {
-
         "limits": {
           "description": "Limits and toggles for specific protocol features",
           "type": "object",
@@ -321,7 +333,7 @@
             },
             "max_qos": {
               "title": "Max QoS",
-              "description": "Whether or not the shared subscription feature is enabled on the broker",
+              "description": "Defines the maximum Quality of Service (QoS) level, which may be used in MQTT PUBLISH messages",
               "type": "integer",
               "default": 2,
               "minimum": 0,

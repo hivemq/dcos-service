@@ -126,7 +126,7 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
             }
             return addresses;
         } catch (ExecutionException ex) {
-            log.error("Failed to resolve DNS record for address '{}'.", frameworkName, ex);
+            log.debug("Failed to resolve DNS record, pod instance is probably not up yet, exception:", ex);
         }
         return null;
     }

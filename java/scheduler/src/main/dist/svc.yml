@@ -61,6 +61,8 @@ pods:
           JAVA_OPTS=${HIVEMQ_JAVA_OPTS} exec $MESOS_SANDBOX/hivemq/bin/run_dcos.sh
         cpus: {{NODE_CPUS}}
         memory: {{NODE_MEM}}
+        # we must give each node plenty of time to replicate its state
+        kill-grace-period: 3600
         configs:
           logback:
             template: logback.xml
@@ -68,7 +70,7 @@ pods:
         discovery:
           prefix: {{FRAMEWORK_NAME}}
         env:
-          HIVEMQ_DNS_DISCOVERY_INTERVAL: 30
+          HIVEMQ_DNS_DISCOVERY_INTERVAL: 90
         health-check:
           cmd: "exec $MESOS_SANDBOX/hivemq/bin/healthcheck"
           interval: 60
@@ -102,6 +104,15 @@ pods:
         resource-set: sidecar-resources
         cmd: |
           set -e
+
+          if [ -n "$INDEX" ]; then
+            if (( ${POD_INSTANCE_INDEX} == ${INDEX} )); then
+              echo "Continuing"
+            else
+              echo "This is not the target index pod, exiting"
+              exit 0
+            fi
+          fi
 
           echo "Downloading zip from $URL"
           ls -la
@@ -145,6 +156,23 @@ pods:
             exit 1
           fi
           touch hivemq-data/extensions/$PLUGIN/DISABLED
+      enable-plugin:
+        goal: ONCE
+        resource-set: sidecar-resources
+        cmd: |
+          set -e
+          if [ -z "$PLUGIN" ]; then
+            echo "Must provide a plugin name"
+            exit 1
+          fi
+          rm hivemq-data/extensions/$PLUGIN/DISABLED
+      decommission:
+        goal: ONCE
+        resource-set: sidecar-resources
+        cmd: |
+          ps aux
+          echo ".."
+          pgrep -f hivemq.jar
 plans:
   deploy:
     strategy: parallel
@@ -178,3 +206,27 @@ plans:
         pod: hivemq
         steps:
           - default: [[add-license]]
+  add-config:
+    strategy: parallel
+    phases:
+      install:
+        strategy: parallel
+        pod: hivemq
+        steps:
+          - default: [[add-config]]
+  disable-plugin:
+    strategy: parallel
+    phases:
+      install:
+        strategy: parallel
+        pod: hivemq
+        steps:
+          - default: [[disable-plugin]]
+  enable-plugin:
+    strategy: parallel
+    phases:
+      install:
+        strategy: parallel
+        pod: hivemq
+        steps:
+          - default: [[enable-plugin]]
