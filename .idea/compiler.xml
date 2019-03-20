@@ -8,11 +8,18 @@
         <outputRelativeToContentRoot value="true" />
         <module name="hivemq-dcos" />
       </profile>
+      <profile name="Annotation profile for hivemq-tool" enabled="true">
+        <sourceOutputDir name="../java/hivemq-tool/target/generated-sources/annotations" />
+        <sourceTestOutputDir name="../java/hivemq-tool/target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="hivemqtool" />
+      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="com.mesosphere.sdk.operator.main" target="1.8" />
       <module name="com.mesosphere.sdk.operator.test" target="1.8" />
       <module name="hivemq-dcos" target="8" />
+      <module name="hivemqtool" target="8" />
     </bytecodeTargetLevel>
   </component>
 </project>

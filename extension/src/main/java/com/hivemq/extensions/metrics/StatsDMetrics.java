@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Report StatsD metrics to DCOS. Server information is provided by env vars in the container.
+ * Report StatsD metrics to DCOS. RestService information is provided by env vars in the container.
  *
  * @author Simon Baier
  */
@@ -36,7 +36,7 @@ public class StatsDMetrics {
             log.debug("Starting StatsD with interval {}, host '{}', port '{}'", interval, host, port);
             reporter.start(interval, TimeUnit.SECONDS);
         } else {
-            log.error("Could not start StatsD metrics reporter. Server information is missing. Host: {}, Port: {}", host, portString);
+            log.error("Could not start StatsD metrics reporter. RestService information is missing. Host: {}, Port: {}", host, portString);
         }
     }
 

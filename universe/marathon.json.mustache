@@ -60,18 +60,21 @@
     {{/service.service_account_secret}}
     "LIBMESOS_URI": "{{resource.assets.uris.libmesos-bundle-tar-gz}}",
 
+    "RLIMIT_NOFILE_SOFT": "{{node.rlimits.rlimit_nofile.soft}}",
+    "RLIMIT_NOFILE_HARD": "{{node.rlimits.rlimit_nofile.hard}}",
+
     "TASKCFG_ALL_HIVEMQ_TOTAL_NODES": "{{node.count}}",
     "TASKCFG_ALL_HIVEMQ_LOG_LEVEL": "{{hivemq.hivemq_log_level}}",
     "TASKCFG_ALL_HIVEMQ_JAVA_OPTS": "{{hivemq.java_options}}",
     "TASKCFG_ALL_HIVEMQ_LICENSE": "{{hivemq.license}}",
 
     "TASKCFG_ALL_HIVEMQ_VERSION" : "4.0.2",
+    {{! HiveMQ configuration injection }}
     "TASKCFG_ALL_HIVEMQ_CONTROL_CENTER_ENABLED" : "{{hivemq.control_center_enabled}}",
     "TASKCFG_ALL_HIVEMQ_CC_USER" : "{{hivemq.control_center_user}}",
     "TASKCFG_ALL_HIVEMQ_CC_PASSWORD" : "{{hivemq.control_center_password}}",
     "TASKCFG_ALL_HIVEMQ_METRICS_ENABLED" : "{{hivemq.metrics_enabled}}",
     "TASKCFG_ALL_HIVEMQ_METRICS_INTERVAL" : "{{hivemq.metrics_interval}}",
-    {{! HiveMQ configuration injection }}
     "TASKCFG_ALL_HIVEMQ_CLUSTER_REPLICA_COUNT" : "{{hivemq.cluster_replica_count}}",
     "TASKCFG_ALL_HIVEMQ_CLUSTER_OVERLOAD_PROTECTION" : "{{hivemq.cluster_overload_protection}}",
 

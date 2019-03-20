@@ -15,6 +15,11 @@ pods:
       sidecar-resources:
         cpus: 0.1
         memory: 128
+    allow-decommission: true
+    rlimits:
+      RLIMIT_NOFILE:
+        soft: {{RLIMIT_NOFILE_SOFT}}
+        hard: {{RLIMIT_NOFILE_HARD}}
     uris:
       - {{HIVEMQ_JRE_URI}}
       - {{HIVEMQ_DCOS_URI}}
@@ -98,30 +103,24 @@ pods:
             port: 0
             env-key: HIVEMQ_CONTROL_CENTER_PORT
             advertise: true
+          api:
+            port: 0
+            env-key: HIVEMQ_REST_PORT
       # add plugin via URL
-      add-plugin:
+      add-extension:
         goal: ONCE
         resource-set: sidecar-resources
         cmd: |
           set -e
 
-          if [ -n "$INDEX" ]; then
-            if (( ${POD_INSTANCE_INDEX} == ${INDEX} )); then
-              echo "Continuing"
-            else
-              echo "This is not the target index pod, exiting"
-              exit 0
-            fi
-          fi
-
           echo "Downloading zip from $URL"
-          ls -la
           cd $MESOS_SANDBOX
-          ls -la
+          rm -f extension.zip 2> /dev/null
           curl $URL -o extension.zip
           mkdir -p extension_tmp
-          unzip extension.zip -d extension_tmp/
-          mv extension_tmp/* hivemq-data/extensions/
+          unzip extension.zip -d -o extension_tmp/
+          # TODO check if this is idempotent now
+          mv -u extension_tmp/* hivemq-data/extensions/
           rm -rf extension_tmp
       # add license via base64 encoded file
       add-license:
@@ -155,7 +154,7 @@ pods:
             echo "Must provide a plugin name"
             exit 1
           fi
-          touch hivemq-data/extensions/$PLUGIN/DISABLED
+          touch hivemq-data/extensions/$PLUGIN/DISABLED || true
       enable-plugin:
         goal: ONCE
         resource-set: sidecar-resources
@@ -165,14 +164,14 @@ pods:
             echo "Must provide a plugin name"
             exit 1
           fi
-          rm hivemq-data/extensions/$PLUGIN/DISABLED
+          rm -f hivemq-data/extensions/$PLUGIN/DISABLED
       decommission:
         goal: ONCE
         resource-set: sidecar-resources
         cmd: |
-          ps aux
-          echo ".."
-          pgrep -f hivemq.jar
+          set -o xtrace
+          set -e
+          $MESOS_SANDBOX/jdk-11.0.2+9-jre/bin/java -jar dcos_files/hivemq-tool*.jar shutdown -u "_api._hivemq-${POD_INSTANCE_INDEX}._tcp.hivemq.mesos."
 plans:
   deploy:
     strategy: parallel
@@ -189,15 +188,23 @@ plans:
         strategy: serial
         pod: hivemq
         steps:
-          - default: [[node]]
-  add-plugin:
+          - default: [[decommission],[node]]
+  #decommission:
+  #  strategy: serial
+  #  phases:
+  #    rolling-upgrade:
+  #      strategy: serial
+  #      pod: hivemq
+  #      steps:
+  #        - default: [[decommission]]
+  add-extension:
     strategy: parallel
     phases:
       install:
         strategy: parallel
         pod: hivemq
         steps:
-          - default: [[add-plugin]]
+          - default: [[add-extension]]
   add-license:
     strategy: parallel
     phases:

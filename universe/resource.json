@@ -14,9 +14,9 @@
     }
   },
   "images": {
-    "icon-small": "https://github.com/dcos/dcos-ui/blob/master/plugins/services/src/img/icon-service-default-small.png?raw=true",
-    "icon-medium": "https://github.com/dcos/dcos-ui/blob/master/plugins/services/src/img/icon-service-default-medium.png?raw=true",
-    "icon-large": "https://github.com/dcos/dcos-ui/blob/master/plugins/services/src/img/icon-service-default-large.png?raw=true"
+    "icon-small": "http://minio.marathon.l4lb.thisdcos.directory:9000/artifacts/hivemq/icon-hivemq-small.png",
+    "icon-medium": "http://minio.marathon.l4lb.thisdcos.directory:9000/artifacts/hivemq/icon-hivemq-medium.png",
+    "icon-large": "http://minio.marathon.l4lb.thisdcos.directory:9000/artifacts/hivemq/icon-hivemq-large.png"
   },
   "cli":{
     "binaries":{
