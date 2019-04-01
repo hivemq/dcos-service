@@ -2,20 +2,22 @@
 {
   "assets": {
     "uris": {
-      "jre-tar-gz": "https://downloads.mesosphere.com/java/server-jre-8u162-linux-x64.tar.gz",
-      "libmesos-bundle-tar-gz": "https://downloads.mesosphere.com/libmesos-bundle/libmesos-bundle-1.11.0.tar.gz",
-      "bootstrap-zip": "https://downloads.mesosphere.com/dcos-commons/artifacts/0.55.2/bootstrap.zip",
+      "jre-tar-gz": "http://minio.marathon.l4lb.thisdcos.directory:9000/artifacts/hivemq/server-jre-8u162-linux-x64.tar.gz",
+      "libmesos-bundle-tar-gz": "http://minio.marathon.l4lb.thisdcos.directory:9000/artifacts/hivemq/libmesos-bundle-1.11.0.tar.gz",
+      "bootstrap-zip": "http://minio.marathon.l4lb.thisdcos.directory:9000/artifacts/hivemq/bootstrap.zip",
       "executor-zip": "https://downloads.mesosphere.com/dcos-commons/artifacts/0.55.2/executor.zip",
-      "scheduler-zip": "https://ecosystem-repo.s3.amazonaws.com/sdk/artifacts/0.55.2/operator-scheduler.zip",
+      "scheduler-zip": "http://minio.marathon.l4lb.thisdcos.directory:9000/artifacts/hivemq/operator-scheduler.zip",
       "svc": "http://minio.marathon.l4lb.thisdcos.directory:9000/artifacts/hivemq/svc.yml",
-      "hivemq-jre": "https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk11u-2019-02-03-10-04/OpenJDK11U-jre_x64_linux_hotspot_2019-02-03-10-04.tar.gz",
-      "hivemq": "http://minio.marathon.l4lb.thisdcos.directory:9000/artifacts/hivemq.zip"
+      "hivemq-jre": "http://minio.marathon.l4lb.thisdcos.directory:9000/artifacts/hivemq/OpenJDK11U-jre_x64_linux_hotspot_2019-02-03-10-04.tar.gz",
+      "hivemq-dcos": "http://minio.marathon.l4lb.thisdcos.directory:9000/artifacts/hivemq/dcos_files.zip",
+      "hivemq-rbac": "https://www.hivemq.com/releases/extensions/hivemq-file-rbac-extension-4.0.0.zip",
+      "hivemq": "http://hivemq.com/releases/hivemq-4.0.2.zip"
     }
   },
   "images": {
-    "icon-small": "https://github.com/dcos/dcos-ui/blob/master/plugins/services/src/img/icon-service-default-small.png?raw=true",
-    "icon-medium": "https://github.com/dcos/dcos-ui/blob/master/plugins/services/src/img/icon-service-default-medium.png?raw=true",
-    "icon-large": "https://github.com/dcos/dcos-ui/blob/master/plugins/services/src/img/icon-service-default-large.png?raw=true"
+    "icon-small": "http://minio.marathon.l4lb.thisdcos.directory:9000/artifacts/hivemq/icon-hivemq-small.png",
+    "icon-medium": "http://minio.marathon.l4lb.thisdcos.directory:9000/artifacts/hivemq/icon-hivemq-medium.png",
+    "icon-large": "http://minio.marathon.l4lb.thisdcos.directory:9000/artifacts/hivemq/icon-hivemq-large.png"
   },
   "cli":{
     "binaries":{
@@ -23,7 +25,7 @@
         "x86-64":{
           "contentHash":[ { "algo":"sha256", "value":"c329d60aa5fea372115c371814a141f6615819db51935bd09a8265c8978115ac" } ],
           "kind":"executable",
-          "url":"https://downloads.mesosphere.com/dcos-commons/artifacts/0.55.2/dcos-service-cli-darwin"
+          "url":"http://minio.marathon.l4lb.thisdcos.directory:9000/artifacts/hivemq/dcos-service-cli-darwin"
         }
       },
       "linux":{

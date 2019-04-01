@@ -1,9 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="hivemq-tool" />
+        <module name="hivemq-dcos" />
+      </profile>
+      <profile name="Annotation profile for hivemq-tool" enabled="true">
+        <sourceOutputDir name="../java/hivemq-tool/target/generated-sources/annotations" />
+        <sourceTestOutputDir name="../java/hivemq-tool/target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="hivemqtool" />
+      </profile>
+    </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="com.mesosphere.sdk.operator.main" target="1.8" />
-      <module name="com.mesosphere.sdk.operator.test" target="1.8" />
+      <module name="com.mesosphere.sdk.operator.main" target="11" />
+      <module name="com.mesosphere.sdk.operator.test" target="11" />
+      <module name="hivemq-dcos" target="8" />
+      <module name="hivemq-tool" target="8" />
+      <module name="hivemqtool" target="8" />
     </bytecodeTargetLevel>
   </component>
 </project>

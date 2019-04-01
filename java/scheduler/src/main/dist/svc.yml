@@ -1,0 +1,249 @@
+name: {{FRAMEWORK_NAME}}
+scheduler:
+  principal: {{FRAMEWORK_PRINCIPAL}}
+  user: {{FRAMEWORK_USER}}
+pods:
+  hivemq:
+    count: {{NODE_COUNT}}
+    placement: '{{{NODE_PLACEMENT}}}'
+    {{#ENABLE_VIRTUAL_NETWORK}}
+      networks:
+        {{VIRTUAL_NETWORK_NAME}}:
+    labels: {{VIRTUAL_NETWORK_PLUGIN_LABELS}}
+    {{/ENABLE_VIRTUAL_NETWORK}}
+    resource-sets:
+      sidecar-resources:
+        cpus: 0.1
+        memory: 128
+    allow-decommission: true
+    rlimits:
+      RLIMIT_NOFILE:
+        soft: {{RLIMIT_NOFILE_SOFT}}
+        hard: {{RLIMIT_NOFILE_HARD}}
+    uris:
+      - {{HIVEMQ_JRE_URI}}
+      - {{HIVEMQ_DCOS_URI}}
+      - {{HIVEMQ_URI}}
+      - {{BOOTSTRAP_URI}}
+      {{#TASKCFG_ALL_ENABLE_RBAC}}
+      - {{HIVEMQ_RBAC_URI}}
+      {{/TASKCFG_ALL_ENABLE_RBAC}}
+    volume:
+      path: "hivemq-data"
+      type: {{NODE_DISK_TYPE}}
+      size: {{NODE_DISK}}
+    tasks:
+      node:
+        goal: RUNNING
+        cmd: |
+          set -o xtrace
+          ln -s $MESOS_SANDBOX/hivemq-${HIVEMQ_VERSION} $MESOS_SANDBOX/hivemq
+
+          export JAVA_HOME=$MESOS_SANDBOX/jdk-11.0.2+9-jre
+          export HIVEMQ_DATA_FOLDER=$MESOS_SANDBOX/hivemq-data
+
+          mkdir -p $MESOS_SANDBOX/hivemq-data/extensions
+          mkdir -p $MESOS_SANDBOX/hivemq-data/conf
+          mkdir -p $MESOS_SANDBOX/hivemq-data/license
+          rm -rf $MESOS_SANDBOX/hivemq-4.0.2/extensions
+          rm -rf $MESOS_SANDBOX/hivemq-4.0.2/conf
+          rm -rf $MESOS_SANDBOX/hivemq-4.0.2/license
+          ln -s $MESOS_SANDBOX/hivemq-data/extensions $MESOS_SANDBOX/hivemq/extensions
+          ln -s $MESOS_SANDBOX/hivemq-data/conf $MESOS_SANDBOX/hivemq/conf
+          ln -s $MESOS_SANDBOX/hivemq-data/license $MESOS_SANDBOX/hivemq/license
+
+          # initial license setup
+          if [ -n "$HIVEMQ_LICENSE" ]; then
+            echo "$HIVEMQ_LICENSE" | base64 -d > $MESOS_SANDBOX/hivemq/license/default.lic
+          fi
+          # set control center login
+          export HIVEMQ_CONTROL_CENTER_USER="${HIVEMQ_CC_USER}"
+          export HIVEMQ_CONTROL_CENTER_PASSWORD="$(echo -n "${HIVEMQ_CC_USER}${HIVEMQ_CC_PASSWORD}" | sha256sum | awk '{ print $1 }')"
+
+          cp -rp dcos_files/bin/* $MESOS_SANDBOX/hivemq/bin
+          cp -rp dcos_files/conf/* $MESOS_SANDBOX/hivemq/conf
+          cp -rp dcos_files/extensions/* $MESOS_SANDBOX/hivemq/extensions
+          ./bootstrap -resolve=false
+
+          {{#TASKCFG_ALL_ENABLE_RBAC}}
+          # RBAC setup
+          echo "Setting up RBAC extension"
+          mv hivemq-file-rbac-extension hivemq-data/extensions/
+          echo "${HIVEMQ_RBAC_EXTENSION_CONFIG}" | base64 -d > $MESOS_SANDBOX/hivemq/extensions/hivemq-file-rbac-extension/extension-config.xml
+          echo "${HIVEMQ_RBAC_CONFIG}" | base64 -d > $MESOS_SANDBOX/hivemq/extensions/hivemq-file-rbac-extension/credentials.xml
+          {{/TASKCFG_ALL_ENABLE_RBAC}}
+
+          JAVA_OPTS=${HIVEMQ_JAVA_OPTS} exec $MESOS_SANDBOX/hivemq/bin/run_dcos.sh
+        cpus: {{NODE_CPUS}}
+        memory: {{NODE_MEM}}
+        # we must give each node plenty of time to replicate its state
+        kill-grace-period: 3600
+        configs:
+          logback:
+            template: logback.xml
+            dest: hivemq-data/conf/logback.xml
+        discovery:
+          prefix: {{FRAMEWORK_NAME}}
+        env:
+          HIVEMQ_DNS_DISCOVERY_INTERVAL: 90
+        health-check:
+          cmd: "exec $MESOS_SANDBOX/hivemq/bin/healthcheck"
+          interval: 60
+          grace-period: 60
+          max-consecutive-failures: 60
+          delay: 10
+          timeout: 30
+        readiness-check:
+          cmd: "exec $MESOS_SANDBOX/hivemq/bin/healthcheck"
+          interval: 60
+          delay: 30
+          timeout: 30
+        ports:
+          mqtt:
+            port: 0
+            env-key: HIVEMQ_MQTT_PORT
+            advertise: true
+            vip:
+              port: 1883
+          cluster:
+            port: 0
+            env-key: HIVEMQ_CLUSTER_PORT
+            advertise: true
+          control-center:
+            port: 0
+            env-key: HIVEMQ_CONTROL_CENTER_PORT
+            advertise: true
+          api:
+            port: 0
+            env-key: HIVEMQ_REST_PORT
+      # add plugin via URL
+      add-extension:
+        goal: ONCE
+        resource-set: sidecar-resources
+        cmd: |
+          set -e
+
+          echo "Downloading zip from $URL"
+          cd $MESOS_SANDBOX
+          rm -f extension.zip 2> /dev/null
+          curl $URL -o extension.zip
+          mkdir -p extension_tmp
+          unzip extension.zip -d -o extension_tmp/
+          # TODO check if this is idempotent now
+          mv -u extension_tmp/* hivemq-data/extensions/
+          rm -rf extension_tmp
+      # add license via base64 encoded file
+      add-license:
+        goal: ONCE
+        resource-set: sidecar-resources
+        cmd: |
+          set -e
+
+          if [ -z "$LICENSE_NAME" ]; then
+            echo "Must provide a license name"
+            exit 1
+          fi
+          echo $LICENSE | base64 -d > hivemq-data/license/$LICENSE_NAME.lic
+      # add arbitrary configurations for extensions
+      add-config:
+        goal: ONCE
+        resource-set: sidecar-resources
+        cmd: |
+          set -e
+          if [ -z "$PATH" ]; then
+            echo "Must provide a path relative to the extensions directory for the file"
+            exit 1
+          fi
+          echo "$FILE_CONTENT" | base64 -d > hivemq-data/extensions/$PATH
+      disable-plugin:
+        goal: ONCE
+        resource-set: sidecar-resources
+        cmd: |
+          set -e
+          if [ -z "$PLUGIN" ]; then
+            echo "Must provide a plugin name"
+            exit 1
+          fi
+          touch hivemq-data/extensions/$PLUGIN/DISABLED || true
+      enable-plugin:
+        goal: ONCE
+        resource-set: sidecar-resources
+        cmd: |
+          set -e
+          if [ -z "$PLUGIN" ]; then
+            echo "Must provide a plugin name"
+            exit 1
+          fi
+          rm -f hivemq-data/extensions/$PLUGIN/DISABLED
+      decommission-task:
+        goal: ONCE
+        resource-set: sidecar-resources
+        cmd: |
+          set -o xtrace
+          set -e
+          $MESOS_SANDBOX/jdk-11.0.2+9-jre/bin/java -jar dcos_files/hivemq-tool*.jar shutdown -u "_api._hivemq-${POD_INSTANCE_INDEX}._tcp.hivemq.mesos."
+plans:
+  deploy:
+    strategy: parallel
+    phases:
+      node:
+        strategy: parallel
+        pod: hivemq
+        steps:
+          - default: [[node]]
+  update:
+    strategy: serial
+    phases:
+      rolling-upgrade:
+        strategy: serial
+        pod: hivemq
+        steps:
+          - default: [[node]]
+  #decommission:
+  #  strategy: serial
+  #  phases:
+  #    rolling-upgrade:
+  #     strategy: serial
+  #     pod: hivemq
+  #     steps:
+  #       - default: [[decommission]]
+  add-extension:
+    strategy: parallel
+    phases:
+      install:
+        strategy: parallel
+        pod: hivemq
+        steps:
+          - default: [[add-extension]]
+  add-license:
+    strategy: parallel
+    phases:
+      install:
+        strategy: parallel
+        pod: hivemq
+        steps:
+          - default: [[add-license]]
+  add-config:
+    strategy: parallel
+    phases:
+      install:
+        strategy: parallel
+        pod: hivemq
+        steps:
+          - default: [[add-config]]
+  disable-plugin:
+    strategy: parallel
+    phases:
+      install:
+        strategy: parallel
+        pod: hivemq
+        steps:
+          - default: [[disable-plugin]]
+  enable-plugin:
+    strategy: parallel
+    phases:
+      install:
+        strategy: parallel
+        pod: hivemq
+        steps:
+          - default: [[enable-plugin]]

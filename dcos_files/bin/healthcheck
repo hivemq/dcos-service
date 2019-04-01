@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+set -o xtrace
+
+# Write to log for now
+$(echo > /dev/tcp/localhost/${HIVEMQ_MQTT_PORT}) > $MESOS_SANDBOX/hivemq-4.0.2/log/check.log 2>&1
