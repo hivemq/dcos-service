@@ -47,10 +47,13 @@ public class Main {
             final List<DnsRecord> addresses = resolver.resolveAll(new DefaultDnsQuestion(hostUri, DnsRecordType.SRV)).get(10, TimeUnit.SECONDS);
             if (addresses.size() == 1) {
                 final String address = decodeServiceRecord(addresses.get(0));
-                final String url = String.format("http://%s/shutdown", address);
+                final String url = String.format("http://%s/health/shutdown", address);
                 final HttpResponse<String> stringHttpResponse = Unirest.    get(url).asString();
                 log.info("Got HTTP response with code {}, URL queried: {}", stringHttpResponse.getStatus(), url);
                 log.debug("Response: {}", stringHttpResponse);
+                if(stringHttpResponse.getStatus() > 199 && stringHttpResponse.getStatus() < 400) {
+                     log.info("Shutdown successful");
+                }
             } else {
                 log.error("Unexpected address count for URI {}, records: {}", hostUri, addresses);
             }
@@ -58,6 +61,8 @@ public class Main {
             log.error("Failed to resolve SRV record for URI {}, exception: {}", hostUri, ex);
         } catch (UnirestException ex) {
             log.error("Failed to query API: {}", ex);
+        } finally {
+            eventLoopGroup.shutdownGracefully();
         }
     }
 

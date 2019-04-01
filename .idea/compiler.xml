@@ -6,6 +6,7 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="hivemq-tool" />
         <module name="hivemq-dcos" />
       </profile>
       <profile name="Annotation profile for hivemq-tool" enabled="true">
@@ -16,9 +17,10 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="com.mesosphere.sdk.operator.main" target="1.8" />
-      <module name="com.mesosphere.sdk.operator.test" target="1.8" />
+      <module name="com.mesosphere.sdk.operator.main" target="11" />
+      <module name="com.mesosphere.sdk.operator.test" target="11" />
       <module name="hivemq-dcos" target="8" />
+      <module name="hivemq-tool" target="8" />
       <module name="hivemqtool" target="8" />
     </bytecodeTargetLevel>
   </component>

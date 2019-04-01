@@ -21,8 +21,8 @@
         </listeners>
         <users>
             <user>
-                <name>${HIVEMQ_CONTROL_CENTER_USER}</name>
-                <password>${HIVEMQ_CONTROL_CENTER_PASSWORD}</password>
+                <name>${HIVEMQ_CC_USER}</name>
+                <password>${HIVEMQ_CC_PASSWORD}</password>
             </user>
         </users>
     </control-center>

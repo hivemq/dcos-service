@@ -30,6 +30,7 @@ import io.netty.handler.codec.dns.*;
 import io.netty.resolver.dns.DnsNameResolver;
 import io.netty.resolver.dns.DnsNameResolverBuilder;
 import io.netty.util.concurrent.Future;
+import jersey.repackaged.com.google.common.collect.Lists;
 import org.apache.commons.validator.routines.InetAddressValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,7 +104,7 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
         log.debug("Discovering other nodes");
 
         // Get node count. exposed as env, rendered from config
-        final String nodeCount = System.getenv("HIVEMQ_TOTAL_NODES");
+        final String nodeCount = System.getenv("POD_INSTANCE_INDEX");
         int index = -1;
         if (nodeCount != null && !nodeCount.isEmpty()) {
             index = Integer.parseInt(nodeCount);
@@ -133,12 +134,17 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
 
     private List<ClusterNodeAddress> resolveAddress(String discoveryAddress, int discoveryTimeout, DnsNameResolver resolver) throws InterruptedException, ExecutionException, TimeoutException {
         final Future<List<DnsRecord>> records = resolver.resolveAll(new DefaultDnsQuestion(discoveryAddress, DnsRecordType.SRV));
-        final List<DnsRecord> recordList = records.get(discoveryTimeout, TimeUnit.SECONDS);
-        // FIXME refactor this, return futures instead and wait/collect on all of them in parallel
-        return recordList.stream()
-                .map(this::decodeServiceRecord)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        try {
+            final List<DnsRecord> recordList = records.get(discoveryTimeout, TimeUnit.SECONDS);
+            // FIXME refactor this, return futures instead and wait/collect on all of them in parallel
+            return recordList.stream()
+                    .map(this::decodeServiceRecord)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        } catch(ExecutionException ex) {
+            log.trace("Ignoring single unresolved record");
+        }
+        return Lists.newArrayList();
     }
 
     private @Nullable ClusterNodeAddress decodeServiceRecord(final DnsRecord dnsRecord) {

@@ -13,6 +13,7 @@ public class RestService {
     @NotNull
     private static final Logger log = LoggerFactory.getLogger(RestService.class);
 
+
     public static final String REST_PORT_KEY = System.getenv("HIVEMQ_REST_PORT");
 
     @NotNull

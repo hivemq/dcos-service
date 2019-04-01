@@ -41,6 +41,7 @@ public class DCOSExtensionMainClass implements ExtensionMain {
     private static final Logger log = LoggerFactory.getLogger(DCOSExtensionMainClass.class);
 
     private @Nullable StatsDMetrics statsdReporter;
+    private @Nullable RestService restService;
 
     @Override
     public void extensionStart(@NotNull ExtensionStartInput extensionStartInput, @NotNull ExtensionStartOutput extensionStartOutput) {
@@ -52,7 +53,7 @@ public class DCOSExtensionMainClass implements ExtensionMain {
                 return;
             }
             Services.clusterService().addDiscoveryCallback(new DnsClusterDiscovery(new DnsDiscoveryConfigExtended(configurationReader)));
-            final RestService restService = new RestService();
+            restService = new RestService();
             restService.start();
             final String metricsEnabled = System.getenv("HIVEMQ_METRICS_ENABLED");
             if("true".equals(metricsEnabled)) {
@@ -70,6 +71,9 @@ public class DCOSExtensionMainClass implements ExtensionMain {
     public void extensionStop(@NotNull ExtensionStopInput extensionStopInput, @NotNull ExtensionStopOutput extensionStopOutput) {
         if(statsdReporter != null) {
             statsdReporter.stopReporter();
+        }
+        if(restService != null) {
+            restService.stop();
         }
     }
 }

@@ -172,7 +172,7 @@
         "java_options": {
           "description": "JAVA_OPTS to pass to the java process",
           "type": "string",
-          "default": "-XX:+UnlockExperimentalVMOptions -XX:+UseNUMA"
+          "default": "-XX:+UnlockExperimentalVMOptions -XX:+UseContainerSupport -XX:InitialRAMPercentage=60 -XX:MaxRAMPercentage=70 -XX:MinRAMPercentage=40 -XX:+UseNUMA"
         },
         "license": {
           "type": "string",
@@ -436,12 +436,51 @@
             "topic_format_validation",
             "allow_request_problem_information"
           ]
+        },
+        "auth": {
+          "description": "HiveMQ specific configuration properties",
+          "type": "object",
+          "properties": {
+            "enable_rbac": {
+              "title": "Enable RBAC extension",
+              "description": "Download and install the file RBAC extension on all nodes",
+              "type": "boolean",
+              "default": false
+            },
+            "rbac_config": {
+              "title": "Configure RBAC file",
+              "description": "credentials.xml configuration for users and roles",
+              "type": "string",
+              "media": {
+                "binaryEncoding": "base64",
+                "type": "application/x-yaml"
+              },
+              "default": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/Pgo8ZmlsZS1yYmFjPgogICAgPHVzZXJzPgogICAgICAgIDx1c2VyPgogICAgICAgICAgICA8bmFtZT51c2VyMTwvbmFtZT4KICAgICAgICAgICAgPCEtLS0gcGFzc3dvcmQgaGFzaCBmb3IgInBhc3MxIiAtLT4KICAgICAgICAgICAgPHBhc3N3b3JkPldGTlFVVkIwVWt4ak0wNHhhMGhTUjFCUU5HaHVPVEpLVnpkbGJYQTRiams9OjEwMDpGWTEybndwVUViQks5RUtRL0F3L3JRS1NvQTdqWHNDMEhLRUx3VTJtTENWVTM5YkpWSzB6ZjROZW11RmVET0hQTzRCVzFuT2p4aTZOcG9ya0M2clVvZz09PC9wYXNzd29yZD4KICAgICAgICAgICAgPHJvbGVzPgogICAgICAgICAgICAgICAgPGlkPnJvbGUxPC9pZD4KICAgICAgICAgICAgPC9yb2xlcz4KICAgICAgICA8L3VzZXI+CiAgICAgICAgPHVzZXI+CiAgICAgICAgICAgIDxuYW1lPmFkbWluLXVzZXI8L25hbWU+CiAgICAgICAgICAgIDwhLS0gcGFzc3dvcmQgaGFzaCBmb3IgImFkbWluLXBhc3N3b3JkIiAtLT4KICAgICAgICAgICAgPHBhc3N3b3JkPlZqYzFhMGx4UTNOdmIwbGpORlZITkU5V1JuTTNSRzFJWm1kTlVGY3dWR1k9OjEwMDpQTDJGTHFmcGRoT05HN3FYakFNbWRWbjR3bE1pWG55cGRYaUZXMDl6cW9yRmhLZ29paXhGUXcyRVZKSmZFOVpuNzlxNDVWN1hwYzZKZUtMcDBudG1ZQT09PC9wYXNzd29yZD4KICAgICAgICAgICAgPHJvbGVzPgogICAgICAgICAgICAgICAgPGlkPnN1cGVydXNlcjwvaWQ+CiAgICAgICAgICAgIDwvcm9sZXM+CiAgICAgICAgPC91c2VyPgogICAgPC91c2Vycz4KICAgIDxyb2xlcz4KICAgICAgICA8cm9sZT4KICAgICAgICAgICAgPGlkPnJvbGUxPC9pZD4KICAgICAgICAgICAgPHBlcm1pc3Npb25zPgogICAgICAgICAgICAgICAgPHBlcm1pc3Npb24+CiAgICAgICAgICAgICAgICAgICAgPCEtLSBQVUJMSVNIIGFuZCBTVUJTQ1JJQkUgdG8gYWxsIHRvcGljcyBiZWxvdyAiZGF0YS88Y2xpZW50aWQ+LyIgLS0+CiAgICAgICAgICAgICAgICAgICAgPHRvcGljPmRhdGEvJHt7Y2xpZW50aWR9fS8jPC90b3BpYz4KICAgICAgICAgICAgICAgIDwvcGVybWlzc2lvbj4KICAgICAgICAgICAgICAgIDxwZXJtaXNzaW9uPgogICAgICAgICAgICAgICAgICAgIDwhLS0gUFVCTElTSCB0byB0b3BpYyAib3V0Z29pbmcvPGNsaWVudGlkPiIsIHJldGFpbmVkIG9ubHktLT4KICAgICAgICAgICAgICAgICAgICA8dG9waWM+b3V0Z29pbmcvJHt7Y2xpZW50aWR9fTwvdG9waWM+CiAgICAgICAgICAgICAgICAgICAgPGFjdGl2aXR5PlBVQkxJU0g8L2FjdGl2aXR5PgogICAgICAgICAgICAgICAgICAgIDxyZXRhaW4+UkVUQUlORUQ8L3JldGFpbj4KICAgICAgICAgICAgICAgIDwvcGVybWlzc2lvbj4KICAgICAgICAgICAgICAgIDxwZXJtaXNzaW9uPgogICAgICAgICAgICAgICAgICAgIDwhLS0gU1VCU0NSSUJFIHRvIHRvcGljICJpbmNvbWluZy88Y2xpZW50aWQ+Ii0tPgogICAgICAgICAgICAgICAgICAgIDx0b3BpYz5pbmNvbWluZy8ke3t1c2VybmFtZX19L2FjdGlvbnM8L3RvcGljPgogICAgICAgICAgICAgICAgICAgIDxhY3Rpdml0eT5TVUJTQ1JJQkU8L2FjdGl2aXR5PgogICAgICAgICAgICAgICAgPC9wZXJtaXNzaW9uPgogICAgICAgICAgICA8L3Blcm1pc3Npb25zPgogICAgICAgIDwvcm9sZT4KICAgICAgICA8cm9sZT4KICAgICAgICAgICAgPGlkPnN1cGVydXNlcjwvaWQ+CiAgICAgICAgICAgIDxwZXJtaXNzaW9ucz4KICAgICAgICAgICAgICAgIDxwZXJtaXNzaW9uPgogICAgICAgICAgICAgICAgICAgIDwhLS0gQWxsb3cgZXZlcnl0aGluZyAtLT4KICAgICAgICAgICAgICAgICAgICA8dG9waWM+IzwvdG9waWM+CiAgICAgICAgICAgICAgICA8L3Blcm1pc3Npb24+CiAgICAgICAgICAgIDwvcGVybWlzc2lvbnM+CiAgICAgICAgPC9yb2xlPgogICAgPC9yb2xlcz4KPC9maWxlLXJiYWM+Cg=="
+            },
+            "rbac_extension_config": {
+              "title": "Configure RBAC extension configuration",
+              "description": "extension-config.xml configuration for users and roles",
+              "type": "string",
+              "media": {
+                "binaryEncoding": "base64",
+                "type": "application/x-yaml"
+              },
+              "default": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/Pgo8ZXh0ZW5zaW9uLWNvbmZpZ3VyYXRpb24+CgogICAgPCEtLSBSZWxvYWQgaW50ZXJ2YWwgZm9yIGNyZWRlbnRpYWxzIGluIHNlY29uZHMgLS0+CiAgICA8Y3JlZGVudGlhbHMtcmVsb2FkLWludGVydmFsPjYwPC9jcmVkZW50aWFscy1yZWxvYWQtaW50ZXJ2YWw+CgogICAgPCEtLSBJZiB0aGUgY3JlZGVudGlhbHMgZmlsZSBpcyB1c2luZyBIQVNIRUQgb3IgUExBSU4gcGFzc3dvcmRzIC0tPgogICAgPHBhc3N3b3JkLXR5cGU+UExBSU48L3Bhc3N3b3JkLXR5cGU+Cgo8L2V4dGVuc2lvbi1jb25maWd1cmF0aW9uPgo="
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "enable_rbac",
+            "rbac_config",
+            "rbac_extension_config"
+          ]
         }
       },
       "additionalProperties": false,
       "required": [
         "limits",
-        "security"
+        "security",
+        "auth"
       ]
     }
   }

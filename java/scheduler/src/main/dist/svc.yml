@@ -25,6 +25,9 @@ pods:
       - {{HIVEMQ_DCOS_URI}}
       - {{HIVEMQ_URI}}
       - {{BOOTSTRAP_URI}}
+      {{#TASKCFG_ALL_ENABLE_RBAC}}
+      - {{HIVEMQ_RBAC_URI}}
+      {{/TASKCFG_ALL_ENABLE_RBAC}}
     volume:
       path: "hivemq-data"
       type: {{NODE_DISK_TYPE}}
@@ -33,7 +36,6 @@ pods:
       node:
         goal: RUNNING
         cmd: |
-          set -e
           set -o xtrace
           ln -s $MESOS_SANDBOX/hivemq-${HIVEMQ_VERSION} $MESOS_SANDBOX/hivemq
 
@@ -62,6 +64,14 @@ pods:
           cp -rp dcos_files/conf/* $MESOS_SANDBOX/hivemq/conf
           cp -rp dcos_files/extensions/* $MESOS_SANDBOX/hivemq/extensions
           ./bootstrap -resolve=false
+
+          {{#TASKCFG_ALL_ENABLE_RBAC}}
+          # RBAC setup
+          echo "Setting up RBAC extension"
+          mv hivemq-file-rbac-extension hivemq-data/extensions/
+          echo "${HIVEMQ_RBAC_EXTENSION_CONFIG}" | base64 -d > $MESOS_SANDBOX/hivemq/extensions/hivemq-file-rbac-extension/extension-config.xml
+          echo "${HIVEMQ_RBAC_CONFIG}" | base64 -d > $MESOS_SANDBOX/hivemq/extensions/hivemq-file-rbac-extension/credentials.xml
+          {{/TASKCFG_ALL_ENABLE_RBAC}}
 
           JAVA_OPTS=${HIVEMQ_JAVA_OPTS} exec $MESOS_SANDBOX/hivemq/bin/run_dcos.sh
         cpus: {{NODE_CPUS}}
@@ -165,7 +175,7 @@ pods:
             exit 1
           fi
           rm -f hivemq-data/extensions/$PLUGIN/DISABLED
-      decommission:
+      decommission-task:
         goal: ONCE
         resource-set: sidecar-resources
         cmd: |
@@ -188,15 +198,15 @@ plans:
         strategy: serial
         pod: hivemq
         steps:
-          - default: [[decommission],[node]]
+          - default: [[node]]
   #decommission:
   #  strategy: serial
   #  phases:
   #    rolling-upgrade:
-  #      strategy: serial
-  #      pod: hivemq
-  #      steps:
-  #        - default: [[decommission]]
+  #     strategy: serial
+  #     pod: hivemq
+  #     steps:
+  #       - default: [[decommission]]
   add-extension:
     strategy: parallel
     phases:
