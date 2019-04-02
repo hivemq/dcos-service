@@ -111,7 +111,8 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
         }
         final String frameworkName = System.getenv("FRAMEWORK_NAME");
 
-        if (index < 1) {
+        if (index < 0) {
+            log.warn("No instance index given, not discovering other nodes");
             return null;
         }
 

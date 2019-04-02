@@ -179,6 +179,36 @@
           "description": "Add a (base64 encoded) license at startup, leave empty to start in evaluation mode",
           "default": ""
         },
+        "tls_enabled": {
+          "description": "Enable TLS for MQTT clients and Control Center",
+          "type": "boolean",
+          "default": false
+        },
+        "cluster_tls_enabled": {
+          "description": "Enable TLS for MQTT clients and Control Center",
+          "type": "boolean",
+          "default": false
+        },
+        "native_tls_enabled": {
+          "description": "When TLS is enabled: specify whether to use native TLS",
+          "type": "boolean",
+          "default": false
+        },
+        "tls_mqtt_port": {
+          "description": "When TLS is enabled: Port to use for the VIP for the MQTT TLS port",
+          "type": "integer",
+          "default": 1884
+        },
+        "websocket_port": {
+          "description": "When WebSocket is enabled: Port to use for the VIP for the WebSocket port",
+          "type": "integer",
+          "default": 8080
+        },
+        "websocket_tls_port": {
+          "description": "When WebSocket and TLS is enabled: Port to use for the VIP for the WebSocket TLS port",
+          "type": "integer",
+          "default": 8444
+        },
         "cluster_replica_count": {
           "title": "Cluster replica count",
           "description": "Number of cluster replica",
@@ -222,6 +252,12 @@
           "type": "integer",
           "default": 5,
           "minimum": 1
+        },
+        "discovery_interval": {
+          "title": "Discovery interval",
+          "description": "Interval within which running nodes will attempt to discover new nodes. This should be fairly low as to allow nodes to quickly discover each other and merge during a rolling update",
+          "type": "integer",
+          "default": 5
         },
         "restrictions": {
           "description": "Restrictions to limit the load on a broker",
@@ -289,6 +325,18 @@
           "description": "Limits and toggles for specific protocol features",
           "type": "object",
           "properties": {
+            "websocket_path": {
+              "title": "WebSocket path",
+              "description": "WebSocket path",
+              "type": "string",
+              "default": "/mqtt"
+            },
+            "websocket_enabled": {
+              "title": "Enable WebSocket listener",
+              "description": "Enable WebSocket listener",
+              "type": "boolean",
+              "default": false
+            },
             "session_expiry_interval": {
               "title": "Session expiry interval",
               "description": "Duration (in seconds) that has to pass after the client disconnected, before its session expires",
@@ -465,7 +513,7 @@
                 "binaryEncoding": "base64",
                 "type": "application/x-yaml"
               },
-              "default": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/Pgo8ZXh0ZW5zaW9uLWNvbmZpZ3VyYXRpb24+CgogICAgPCEtLSBSZWxvYWQgaW50ZXJ2YWwgZm9yIGNyZWRlbnRpYWxzIGluIHNlY29uZHMgLS0+CiAgICA8Y3JlZGVudGlhbHMtcmVsb2FkLWludGVydmFsPjYwPC9jcmVkZW50aWFscy1yZWxvYWQtaW50ZXJ2YWw+CgogICAgPCEtLSBJZiB0aGUgY3JlZGVudGlhbHMgZmlsZSBpcyB1c2luZyBIQVNIRUQgb3IgUExBSU4gcGFzc3dvcmRzIC0tPgogICAgPHBhc3N3b3JkLXR5cGU+UExBSU48L3Bhc3N3b3JkLXR5cGU+Cgo8L2V4dGVuc2lvbi1jb25maWd1cmF0aW9uPgo="
+              "default": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/Pgo8ZXh0ZW5zaW9uLWNvbmZpZ3VyYXRpb24+CgogICAgPCEtLSBSZWxvYWQgaW50ZXJ2YWwgZm9yIGNyZWRlbnRpYWxzIGluIHNlY29uZHMgLS0+CiAgICA8Y3JlZGVudGlhbHMtcmVsb2FkLWludGVydmFsPjYwPC9jcmVkZW50aWFscy1yZWxvYWQtaW50ZXJ2YWw+CgogICAgPCEtLSBJZiB0aGUgY3JlZGVudGlhbHMgZmlsZSBpcyB1c2luZyBIQVNIRUQgb3IgUExBSU4gcGFzc3dvcmRzIC0tPgogICAgPHBhc3N3b3JkLXR5cGU+SEFTSEVEPC9wYXNzd29yZC10eXBlPgoKPC9leHRlbnNpb24tY29uZmlndXJhdGlvbj4="
             }
           },
           "additionalProperties": false,

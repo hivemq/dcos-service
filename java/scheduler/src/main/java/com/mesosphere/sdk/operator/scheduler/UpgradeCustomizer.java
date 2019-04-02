@@ -18,18 +18,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class UpgradeCustomizer implements PlanCustomizer {
-    private final Persister persister;
-    private final DefaultStepFactory defaultStepFactory;
     private final ReversePhaseFactory reversePhaseFactory;
     private final DefaultServiceSpec defaultServiceSpec;
 
     Logger log = LoggerFactory.getLogger(UpgradeCustomizer.class);
     private StateStore stateStore;
 
-    public UpgradeCustomizer(Persister persister, ConfigStore<ServiceSpec> configStore, DefaultServiceSpec defaultServiceSpec) {
-        this.persister = persister;
+    public UpgradeCustomizer(Persister persister, DefaultServiceSpec defaultServiceSpec) {
         this.stateStore = new StateStore(persister);
-        this.defaultStepFactory = new DefaultStepFactory(configStore, stateStore, Optional.empty());
         this.reversePhaseFactory = new ReversePhaseFactory();
         this.defaultServiceSpec = defaultServiceSpec;
     }
@@ -37,13 +33,13 @@ public class UpgradeCustomizer implements PlanCustomizer {
     @Override
     public Plan updatePlan(Plan plan) {
 
-        /*if (plan.getName().equals(Constants.DEPLOY_PLAN_NAME)) {
+        if (plan.getName().equals(Constants.DEPLOY_PLAN_NAME)) {
             plan.getChildren().forEach(phase -> Collections.reverse(phase.getChildren()));
         }
-        return plan;*/
-        log.info("Received plan: {}", plan);
+        return plan;
+        /*log.info("Received plan: {}", plan);
 
-        return handleUpdatePlan(plan);
+        return handleUpdatePlan(plan);*/
     }
 
 
