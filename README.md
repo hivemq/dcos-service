@@ -73,9 +73,7 @@ Note: You can also use the alternative guide for Datadog, however we will not pr
 
 2. Open Grafana and add the Prometheus data source.
 
-3. Create a new dashboard by importing the following template
-
-TODO template linken
+3. Create a new dashboard by importing the `HiveMQ-Prometheus.json` file.
 
 4. Choose your Prometheus data source
 
