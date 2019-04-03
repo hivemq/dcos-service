@@ -33,13 +33,14 @@ public class UpgradeCustomizer implements PlanCustomizer {
     @Override
     public Plan updatePlan(Plan plan) {
 
-        if (plan.getName().equals(Constants.DEPLOY_PLAN_NAME)) {
+        /*if (plan.getName().equals(Constants.DEPLOY_PLAN_NAME)) {
             plan.getChildren().forEach(phase -> Collections.reverse(phase.getChildren()));
         }
-        return plan;
-        /*log.info("Received plan: {}", plan);
+        log.info("Modified plan: {}", plan);
+        return plan;*/
+        log.info("Received plan: {}", plan);
 
-        return handleUpdatePlan(plan);*/
+        return handleUpdatePlan(plan);
     }
 
 
@@ -47,17 +48,13 @@ public class UpgradeCustomizer implements PlanCustomizer {
         int index = -1;
 
         for (int i = 0; i < plan.getChildren().size(); ++i) {
-            /*final Phase phase = plan.getChildren().get(i);
-            if ("rolling-upgrade".equals(phase.getName())) {
-                index = i;
-            }*/
-            final PodSpec podSpec = defaultServiceSpec.getPods().get(0);
-            log.info("Modifying update phase for rolling upgrade");
             final Phase phase = plan.getChildren().get(i);
-            log.info("Original plan: {}", plan);
-            plan.getChildren().set(i, revertPhase(podSpec, phase.getChildren()));
-            log.info("Modified plan: {}", plan);
-            log.info("Strategy: {}", plan.getStrategy());
+            if ("rolling-upgrade".equals(phase.getName())) {
+                if(index != -1) {
+                    log.warn("More than one rolling upgrade phase found");
+                }
+                index = i;
+            }
         }
 
         if (index != -1) {

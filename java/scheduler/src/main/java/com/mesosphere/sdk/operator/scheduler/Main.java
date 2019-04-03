@@ -1,7 +1,9 @@
 
 package com.mesosphere.sdk.operator.scheduler;
 
+import com.google.common.collect.Lists;
 import com.mesosphere.sdk.framework.EnvStore;
+import com.mesosphere.sdk.operator.scheduler.api.NodeDiscovery;
 import com.mesosphere.sdk.operator.scheduler.scheduler.CustomizedDefaultScheduler;
 import com.mesosphere.sdk.operator.scheduler.scheduler.CustomizedSchedulerBuilder;
 import com.mesosphere.sdk.operator.scheduler.scheduler.CustomizedSchedulerRunner;
@@ -46,14 +48,14 @@ public class Main {
         RawServiceSpec rawServiceSpec = RawServiceSpec.newBuilder(yamlSpecFile).build();
         File configDir = yamlSpecFile.getParentFile();
 
-        final int apiServerPort = SchedulerConfig.fromEnv().getApiServerPort();
+        final Map<String, String> env = System.getenv();
+        /*final int apiServerPort = SchedulerConfig.fromEnv().getApiServerPort();
         // Wrap around the API server here:
         // get the API port from the original scheduler config, bind to it and proxy to another port where the actual scheduler API is running.
         final LoadBalancingProxyClient dashboardProxyClient = new LoadBalancingProxyClient();
         final ProxyHandler dashboardProxyHandler = ProxyHandler.builder().setProxyClient(dashboardProxyClient).build();
         final LoadBalancingProxyClient apiProxyClient = new LoadBalancingProxyClient();
         // FIXME: figure out the pod instances control center ports and add them to the dashboard LB
-        final Map<String, String> env = new HashMap<>(System.getenv());
         final String actualPortString = env.get("PORT_ACTUAL");
         env.put("PORT_API", actualPortString);
         apiProxyClient.addHost(URI.create("http://localhost:" + actualPortString));
@@ -71,9 +73,9 @@ public class Main {
                     }
                 })
                 .build();
-        undertow.start();
+        undertow.start();*/
 
-        SchedulerConfig schedulerConfig = SchedulerConfig.fromEnvStore(EnvStore.fromMap(env));
+        SchedulerConfig schedulerConfig = SchedulerConfig.fromEnv();
         final DefaultServiceSpec.Generator generator = DefaultServiceSpec.newGenerator(rawServiceSpec, schedulerConfig, env, yamlSpecFile.getParentFile());
         final DefaultServiceSpec defaultServiceSpec = generator.build();
         final CustomizedSchedulerBuilder schedulerBuilder = CustomizedDefaultScheduler.newBuilder(defaultServiceSpec, schedulerConfig);
@@ -83,6 +85,8 @@ public class Main {
         final UpgradeCustomizer upgradeCustomizer = new UpgradeCustomizer(persister, defaultServiceSpec);
         schedulerBuilder.setPlanCustomizer(upgradeCustomizer);
         schedulerBuilder.setPlansFrom(rawServiceSpec);
+        final NodeDiscovery nodeDiscovery = new NodeDiscovery(defaultServiceSpec.getPods().get(0).getCount());
+        schedulerBuilder.setCustomResources(Lists.newArrayList(nodeDiscovery));
         return schedulerBuilder;
     }
 }

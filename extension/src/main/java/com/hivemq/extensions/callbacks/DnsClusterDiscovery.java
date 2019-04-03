@@ -23,6 +23,8 @@ import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryI
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
 import com.hivemq.extensions.configuration.DnsDiscoveryConfigExtended;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
@@ -103,8 +105,20 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
 
         log.debug("Discovering other nodes");
 
-        // Get node count. exposed as env, rendered from config
-        final String nodeCount = System.getenv("POD_INSTANCE_INDEX");
+        // Get node count from scheduler API
+        final String queryHost = System.getenv("SCHEDULER_API_HOSTNAME") + ":" + System.getenv("SCHEDULER_API_PORT");
+        String nodeCount = null;
+        try {
+             nodeCount = Unirest.get(String.format("http://%s/discovery/nodeCount", queryHost)).asString().getBody();
+        } catch (UnirestException e) {
+            log.warn("Node count request failed. Is the scheduler restarting?", e);
+        }
+
+        // Fallback: Get node count. exposed as env, rendered from config
+        if(nodeCount == null) {
+            nodeCount = System.getenv("POD_INSTANCE_INDEX");
+        }
+
         int index = -1;
         if (nodeCount != null && !nodeCount.isEmpty()) {
             index = Integer.parseInt(nodeCount);
@@ -142,7 +156,7 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
                     .map(this::decodeServiceRecord)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
-        } catch(ExecutionException ex) {
+        } catch (ExecutionException ex) {
             log.trace("Ignoring single unresolved record");
         }
         return Lists.newArrayList();

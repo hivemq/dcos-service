@@ -179,13 +179,8 @@
           "description": "Add a (base64 encoded) license at startup, leave empty to start in evaluation mode",
           "default": ""
         },
-        "tls_enabled": {
-          "description": "Enable TLS for MQTT clients and Control Center",
-          "type": "boolean",
-          "default": false
-        },
         "cluster_tls_enabled": {
-          "description": "Enable TLS for MQTT clients and Control Center",
+          "description": "Enable TLS for HiveMQ cluster transports. Make sure that your TLS settings are correct (Service Account and secret). Changing this option at runtime may lead to data-loss",
           "type": "boolean",
           "default": false
         },
@@ -194,20 +189,115 @@
           "type": "boolean",
           "default": false
         },
-        "tls_mqtt_port": {
-          "description": "When TLS is enabled: Port to use for the VIP for the MQTT TLS port",
-          "type": "integer",
-          "default": 1884
-        },
-        "websocket_port": {
-          "description": "When WebSocket is enabled: Port to use for the VIP for the WebSocket port",
-          "type": "integer",
-          "default": 8080
-        },
-        "websocket_tls_port": {
-          "description": "When WebSocket and TLS is enabled: Port to use for the VIP for the WebSocket TLS port",
-          "type": "integer",
-          "default": 8444
+        "listener_configuration": {
+          "description": "Configure HiveMQ listeners",
+          "type": "object",
+          "properties": {
+            "mqtt_port": {
+              "description": "MQTT port to use on the individual cluster nodes. A random port is chosen by default.",
+              "type": "integer",
+              "default": 0
+            },
+
+            "websocket_enabled": {
+              "title": "Enable WebSocket listener",
+              "description": "Enable WebSocket listener",
+              "type": "boolean",
+              "default": false
+            },
+            "websocket_path": {
+              "title": "WebSocket path",
+              "description": "WebSocket path",
+              "type": "string",
+              "default": "/mqtt"
+            },
+            "websocket_port": {
+              "description": "When WebSocket is enabled: Port to use for the WebSocket listener",
+              "type": "integer",
+              "default": 8083
+            },
+            "websocket_port_vip_enabled": {
+              "description": "Whether to enable the VIP for the MQTT TLS port",
+              "type": "boolean",
+              "default": false
+            },
+            "websocket_port_vip": {
+              "description": "When WebSocket is enabled: Port to use for the VIP for the WebSocket port",
+              "type": "integer",
+              "default": 8083
+            },
+
+
+            "mqtt_tls_enabled": {
+              "description": "Enable TLS listeners for MQTT clients (default and WebSocket if enabled)",
+              "type": "boolean",
+              "default": false
+            },
+            "mqtt_tls_port": {
+              "description": "When TLS is enabled: Port to use for the MQTT TLS port",
+              "type": "integer",
+              "default": 8883
+            },
+            "mqtt_tls_port_vip_enabled": {
+              "description": "Whether to enable the VIP for the MQTT TLS port",
+              "type": "boolean",
+              "default": true
+            },
+            "mqtt_tls_port_vip": {
+              "description": "When TLS and the VIP are enabled: Port to use for the VIP for the MQTT TLS port",
+              "type": "integer",
+              "default": 8883
+            },
+
+            "websocket_tls_port": {
+              "description": "When WebSocket and TLS is enabled: Port to use for the VIP for the WebSocket TLS port",
+              "type": "integer",
+              "default": 8443
+            },
+            "websocket_tls_port_vip_enabled": {
+              "description": "Whether to enable the VIP for the WebSocket TLS port",
+              "type": "boolean",
+              "default": false
+            },
+            "websocket_tls_port_vip": {
+              "description": "When TLS, the VIP and WebSocket are enabled: Port to use for the VIP for the WebSocket TLS port",
+              "type": "integer",
+              "default": 8443
+            },
+
+            "control_center_tls_enabled": {
+              "description": "Whether to enable the VIP for the WebSocket TLS port",
+              "type": "boolean",
+              "default": false
+            },
+            "control_center_tls_port": {
+              "description": "When TLS is enabled: Port for the Control Center TLS listener",
+              "type": "integer",
+              "default": 8444
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "mqtt_port",
+
+            "websocket_enabled",
+            "websocket_path",
+            "websocket_port",
+            "websocket_port_vip_enabled",
+            "websocket_port_vip",
+
+            "mqtt_tls_enabled",
+            "mqtt_tls_port",
+            "mqtt_tls_port_vip_enabled",
+            "mqtt_tls_port_vip",
+
+            "websocket_tls_port",
+            "websocket_tls_port_vip_enabled",
+            "websocket_tls_port_vip",
+
+            "control_center_tls_enabled",
+            "control_center_tls_port"
+          ]
         },
         "cluster_replica_count": {
           "title": "Cluster replica count",
@@ -314,7 +404,12 @@
         "control_center_user",
         "control_center_password",
         "restrictions",
-        "java_options"
+        "java_options",
+        "cluster_tls_enabled",
+        "native_tls_enabled",
+        "metrics_enabled",
+        "metrics_interval",
+        "discovery_interval"
       ]
     },
     "mqtt": {
@@ -325,18 +420,6 @@
           "description": "Limits and toggles for specific protocol features",
           "type": "object",
           "properties": {
-            "websocket_path": {
-              "title": "WebSocket path",
-              "description": "WebSocket path",
-              "type": "string",
-              "default": "/mqtt"
-            },
-            "websocket_enabled": {
-              "title": "Enable WebSocket listener",
-              "description": "Enable WebSocket listener",
-              "type": "boolean",
-              "default": false
-            },
             "session_expiry_interval": {
               "title": "Session expiry interval",
               "description": "Duration (in seconds) that has to pass after the client disconnected, before its session expires",

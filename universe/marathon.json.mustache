@@ -74,14 +74,31 @@
     "TASKCFG_ALL_HIVEMQ_CLUSTER_REPLICA_COUNT": "{{hivemq.cluster_replica_count}}",
     "TASKCFG_ALL_HIVEMQ_CLUSTER_OVERLOAD_PROTECTION": "{{hivemq.cluster_overload_protection}}",
     "TASKCFG_ALL_HIVEMQ_DISCOVERY_INTERVAL": "{{hivemq.discovery_interval}}",
-    "TASKCFG_ALL_HIVEMQ_WEBSOCKET_ENABLED": "{{mqtt.websocket_enabled}}",
-    "TASKCFG_ALL_HIVEMQ_WEBSOCKET_PORT": "{{hivemq.websocket_port}}",
-
-    {{! security }}
-    "TASKCFG_ALL_HIVEMQ_TLS_LISTENER_ENABLED": "{{hivemq.tls_enabled}}",
     "TASKCFG_ALL_HIVEMQ_CLUSTER_TLS_ENABLED": "{{hivemq.cluster_tls_enabled}}",
     "TASKCFG_ALL_HIVEMQ_NATIVE_TLS_ENABLED": "{{hivemq.native_tls_enabled}}",
-    "TASKCFG_ALL_HIVEMQ_TLS_MQTT_PORT_VIP": "{{hivemq.tls_mqtt_port}}",
+
+    {{! listener configuration }}
+    "TASKCFG_ALL_HIVEMQ_MQTT_PORT_CONF": "{{hivemq.listener_configuration.mqtt_port}}",
+
+    "TASKCFG_ALL_HIVEMQ_WEBSOCKET_ENABLED": "{{hivemq.listener_configuration.websocket_enabled}}",
+    "TASKCFG_ALL_HIVEMQ_WEBSOCKET_PATH": "{{hivemq.listener_configuration.websocket_path}}",
+    "TASKCFG_ALL_HIVEMQ_WEBSOCKET_PORT_CONF": "{{hivemq.listener_configuration.websocket_port}}",
+    "TASKCFG_ALL_HIVEMQ_WEBSOCKET_PORT_VIP_ENABLED": "{{hivemq.listener_configuration.websocket_port_vip_enabled}}",
+    "TASKCFG_ALL_HIVEMQ_WEBSOCKET_PORT_VIP": "{{hivemq.listener_configuration.websocket_port_vip}}",
+
+
+    "TASKCFG_ALL_HIVEMQ_TLS_LISTENER_ENABLED": "{{hivemq.listener_configuration.mqtt_tls_enabled}}",
+    "TASKCFG_ALL_HIVEMQ_TLS_MQTT_PORT_CONF": "{{hivemq.listener_configuration.mqtt_tls_port}}",
+    "TASKCFG_ALL_HIVEMQ_TLS_MQTT_PORT_VIP_ENABLED": "{{hivemq.listener_configuration.mqtt_tls_port_vip_enabled}}",
+    "TASKCFG_ALL_HIVEMQ_TLS_MQTT_PORT_VIP": "{{hivemq.listener_configuration.mqtt_tls_port_vip}}",
+
+    "TASKCFG_ALL_HIVEMQ_WEBSOCKET_TLS_PORT_CONF": "{{hivemq.listener_configuration.websocket_tls_port}}",
+    "TASKCFG_ALL_HIVEMQ_WEBSOCKET_TLS_PORT_VIP_ENABLED": "{{hivemq.listener_configuration.websocket_tls_port_vip_enabled}}",
+    "TASKCFG_ALL_HIVEMQ_WEBSOCKET_TLS_PORT_VIP": "{{hivemq.listener_configuration.websocket_tls_port_vip}}",
+
+    "TASKCFG_ALL_HIVEMQ_CC_LISTENER_ENABLED": "{{hivemq.listener_configuration.control_center_tls_enabled}}",
+    "TASKCFG_ALL_HIVEMQ_CC_PORT_CONF": "{{hivemq.listener_configuration.control_center_tls_port}}",
+
 
     {{! restrictions }}
     "TASKCFG_ALL_HIVEMQ_INCOMING_BANDWIDTH_THROTTLING": "{{hivemq.incoming_bandwidth_throttling}}",
@@ -91,7 +108,6 @@
     "TASKCFG_ALL_HIVEMQ_NO_CONNECT_IDLE_TIMEOUT": "{{hivemq.no_connect_idle_timeout}}",
 
     {{! mqtt options }}
-    "TASKCFG_ALL_HIVEMQ_WS_PATH": "{{mqtt.websocket_path}}",
     "TASKCFG_ALL_HIVEMQ_MAX_PACKET_SIZE": "{{mqtt.max_packet_size}}",
     "TASKCFG_ALL_HIVEMQ_SESSION_EXPIRY_INTERVAL": "{{mqtt.session_expiry_interval}}",
     "TASKCFG_ALL_HIVEMQ_SERVER_RECEIVE_MAXIMUM": "{{mqtt.server_receive_maximum}}",

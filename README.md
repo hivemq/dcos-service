@@ -2,34 +2,6 @@
 
 Requires [dcosdev](https://github.com/mesosphere/dcosdev) for development
 
-## Accessing the Control Center
-
-### DNS name
-
-This service binds HiveMQ's control center to a random port and exposes the address as a DNS record for each cluster node.
-
-You can use these records to create a proxy on a public node to forward requests to the broker using those SRV records. (Implement sticky session on the proxy when doing so)
-
-TODO: ELB with sticky session
-
-### DCOS Tunnel
-
-See [Using a DCOS Tunnel](https://docs.mesosphere.com/latest/developing-services/tunnel/) for more information.
-
-Using this approach you can directly use the provided DNS addresses displayed at the `Endpoints` view of your service.
-
-### SSH Proxy
-
-You can also use the `dcos` CLI's proxy feature to connect to the control center of a single broker directly:
-
-```
-mesos_id=$(dcos task hivemq --json | jq -r '.[] | select (.name == "hivemq-0-node").slave_id')
-port=$(dcos task hivemq --json  | jq '.[].discovery | select(.name == "hivemq-0") | .ports[] | .[] | select(.name == "control-center").number')
-dcos node ssh --master-proxy --mesos-id=$mesos_id --option LocalForward=$port=localhost:$port
-```
-
-This will forward the control center port (will be displayed when the SSH tunnel is established) to localhost, allowing you to access the control center of a single HiveMQ node.
-
 ## Managing the cluster
 
 Sidecar plans are provided to allow you to maintain the cluster at runtime, performing several common tasks.
@@ -61,6 +33,29 @@ To add arbitrary configuration files for your custom extensions or update existi
 
 TODO ist es wirklich im extensions ordner oder doch im conf ordner??
 
+### Upgrading
+
+To display a list of available package versions for upgrade, run:
+
+```
+dcos hivemq update package-versions
+```
+
+#### Upgrading or downgrading a service
+
+1. Before updating the service itself, update its CLI subcommand to the new version:
+
+```
+$ dcos package uninstall --cli hivemq
+$ dcos package install --cli hivemq --package-version="<version>"
+```
+
+2. After the CLI subcommand has been updated, call the `update start` command, passing in the version
+
+```
+$ dcos hivemq update start --package-version="<version>"
+```
+
 ## Monitoring
 
 This service supports using DCOS' metrics integration by default. Alternatively you can also install extensions to support your own monitoring solution.
@@ -78,6 +73,35 @@ Note: You can also use the alternative guide for Datadog, however we will not pr
 4. Choose your Prometheus data source
 
 5. Open the dashboard and choose the HiveMQ nodes from the `node` variable
+
+
+## Accessing the Control Center
+
+### DNS name
+
+This service binds HiveMQ's control center to a random port and exposes the address as a DNS record for each cluster node.
+
+You can use these records to create a proxy on a public node to forward requests to the broker using those SRV records. (Implement sticky session on the proxy when doing so)
+
+TODO: ELB with sticky session
+
+### DCOS Tunnel
+
+See [Using a DCOS Tunnel](https://docs.mesosphere.com/latest/developing-services/tunnel/) for more information.
+
+Using this approach you can directly use the provided DNS addresses displayed at the `Endpoints` view of your service.
+
+### SSH Proxy
+
+You can also use the `dcos` CLI's proxy feature to connect to the control center of a single broker directly:
+
+```
+mesos_id=$(dcos task hivemq --json | jq -r '.[] | select (.name == "hivemq-0-node").slave_id')
+port=$(dcos task hivemq --json  | jq '.[].discovery | select(.name == "hivemq-0") | .ports[] | .[] | select(.name == "control-center").number')
+dcos node ssh --master-proxy --mesos-id=$mesos_id --option LocalForward=$port=localhost:$port
+```
+
+This will forward the control center port (will be displayed when the SSH tunnel is established) to localhost, allowing you to access the control center of a single HiveMQ node.
 
 ## TLS
 

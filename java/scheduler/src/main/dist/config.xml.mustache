@@ -29,21 +29,21 @@
             </tls-tcp-listener>
         {{/HIVEMQ_TLS_LISTENER_ENABLED}}
         <!-- native WS -->
-        {{#HIVEMQ_WS_ENABLED}}
+        {{#HIVEMQ_WEBSOCKET_ENABLED}}
             <websocket-listener>
-                <port>${HIVEMQ_TLS_WS_PORT}</port>
+                <port>${HIVEMQ_WEBSOCKET_PORT}</port>
                 <bind-address>0.0.0.0</bind-address>
-                <path>${HIVEMQ_WS_PATH}</path>
+                <path>${HIVEMQ_WEBSOCKET_PATH}</path>
                 <subprotocols>
                     <subprotocol>mqttv3.1</subprotocol>
                     <subprotocol>mqtt</subprotocol>
                 </subprotocols>
                 <allow-extensions>true</allow-extensions>
             </websocket-listener>
-        {{/HIVEMQ_WS_ENABLED}}
+        {{/HIVEMQ_WEBSOCKET_ENABLED}}
         <!-- TLS-WS -->
         {{#HIVEMQ_TLS_LISTENER_ENABLED}}
-            {{#HIVEMQ_WS_ENABLED}}
+            {{#HIVEMQ_WEBSOCKET_ENABLED}}
                 <tls-websocket-listener>
                     <port>${HIVEMQ_TLS_WS_PORT}</port>
                     <bind-address>0.0.0.0</bind-address>
@@ -67,7 +67,7 @@
                         <client-authentication-mode>NONE</client-authentication-mode>
                     </tls>
                 </tls-websocket-listener>
-            {{/HIVEMQ_WS_ENABLED}}
+            {{/HIVEMQ_WEBSOCKET_ENABLED}}
         {{/HIVEMQ_TLS_LISTENER_ENABLED}}
     </listeners>
 

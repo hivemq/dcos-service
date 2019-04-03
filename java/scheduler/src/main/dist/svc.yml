@@ -107,7 +107,7 @@ pods:
             # We can only do this when rolling upgrade works though, as the condition is only met when node count is incremented during upgrade, which is currently not the case (upgrade node is last, therefore the deployment cannot complete)
             #cluster_message=$(cat hivemq-data/log/hivemq.log | grep "Cluster size" | tail -n1)
             #cluster_size=$(echo ${cluster_message} | sed -e "s|.* Cluster size = ||" | sed -e "s|, members.*||")
-            #if (( {{NODE_COUNT}} == ${cluster_size} )); then
+            #if (( {{NODE_COUNT}} >= ${cluster_size} )); then
             #  exit 0
             #fi
           interval: 60
@@ -120,40 +120,49 @@ pods:
         {{/TASKCFG_ALL_HIVEMQ_TLS_LISTENER_ENABLED}}
         ports:
           mqtt:
-            port: 0
+            port: {{TASKCFG_ALL_HIVEMQ_MQTT_PORT_CONF}}
             env-key: HIVEMQ_MQTT_PORT
             advertise: true
             vip:
               port: 1883
-        {{#TASKCFG_ALL_HIVEMQ_TLS_LISTENER_ENABLED}}
+          {{#TASKCFG_ALL_HIVEMQ_TLS_LISTENER_ENABLED}}
           mqtt-tls:
-            port: 0
+            port: {{ TASKCFG_ALL_HIVEMQ_TLS_MQTT_PORT_CONF }}
             advertise: true
             env-key: HIVEMQ_TLS_MQTT_PORT
+            {{#TASKCFG_ALL_HIVEMQ_TLS_MQTT_PORT_VIP_ENABLED}}
             vip:
-              port: {{TASKCFG_ALL_HIVEMQ_TLS_MQTT_PORT_VIP}}
-      {{#TASKCFG_ALL_HIVEMQ_WEBSOCKET_ENABLED}}
+              port: {{ TASKCFG_ALL_HIVEMQ_TLS_MQTT_PORT_VIP }}
+            {{/TASKCFG_ALL_HIVEMQ_TLS_MQTT_PORT_VIP_ENABLED}}
+          {{#TASKCFG_ALL_HIVEMQ_WEBSOCKET_ENABLED}}
           websocket-tls:
-            port: 0
+            port: {{ TASKCFG_ALL_HIVEMQ_WEBSOCKET_TLS_PORT_CONF }}
             advertise: true
             env-key: HIVEMQ_TLS_WS_PORT
-    {{/TASKCFG_ALL_HIVEMQ_WEBSOCKET_ENABLED}}
-        {{#TASKCFG_ALL_HIVEMQ_CONTROL_CENTER_ENABLED}}
+          {{#TASKCFG_ALL_HIVEMQ_WEBSOCKET_TLS_PORT_VIP_ENABLED}}
+            vip:
+              port: {{ TASKCFG_ALL_HIVEMQ_WEBSOCKET_TLS_PORT_VIP }}
+            {{/TASKCFG_ALL_HIVEMQ_WEBSOCKET_TLS_PORT_VIP_ENABLED}}
+          {{/TASKCFG_ALL_HIVEMQ_WEBSOCKET_ENABLED}}
+          {{#TASKCFG_ALL_HIVEMQ_CONTROL_CENTER_ENABLED}}
           control-center-tls:
-            port: 0
+            port: {{ TASKCFG_ALL_HIVEMQ_CC_PORT_CONF }}
             advertise: true
-            # TODO env-key here
-      {{/TASKCFG_ALL_HIVEMQ_CONTROL_CENTER_ENABLED}}
-{{/TASKCFG_ALL_HIVEMQ_TLS_LISTENER_ENABLED}}
-  {{#TASKCFG_ALL_HIVEMQ_WEBSOCKET_ENABLED}}
+            env-key: HIVEMQ_CC_TLS_PORT
+            # TODO env-key here, config.xml templating
+          {{/TASKCFG_ALL_HIVEMQ_CONTROL_CENTER_ENABLED}}
+          {{/TASKCFG_ALL_HIVEMQ_TLS_LISTENER_ENABLED}}
+          {{#TASKCFG_ALL_HIVEMQ_WEBSOCKET_ENABLED}}
           websocket:
-            port: 0
+            port: {{ TASKCFG_ALL_HIVEMQ_WEBSOCKET_PORT_CONF }}
             advertise: true
-            env-key: HIVEMQ_WS_PORT
+            env-key: HIVEMQ_WEBSOCKET_PORT
+            {{#TASKCFG_ALL_HIVEMQ_WEBSOCKET_PORT_VIP_ENABLED}}
             vip:
               prefix: websocket
-              port: {{TASKCFG_ALL_HIVEMQ_WEBSOCKET_PORT}}
-  {{/TASKCFG_ALL_HIVEMQ_WEBSOCKET_ENABLED}}
+              port: {{ TASKCFG_ALL_HIVEMQ_WEBSOCKET_PORT_VIP }}
+            {{/TASKCFG_ALL_HIVEMQ_WEBSOCKET_PORT_VIP_ENABLED}}
+          {{/TASKCFG_ALL_HIVEMQ_WEBSOCKET_ENABLED}}
           cluster:
             port: 0
             env-key: HIVEMQ_CLUSTER_PORT
