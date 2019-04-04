@@ -37,7 +37,6 @@ import org.apache.commons.validator.routines.InetAddressValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -54,10 +53,10 @@ import java.util.stream.Collectors;
  * @author Daniel Krüger
  * @author Simon Baier
  */
-public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
+public class DCOSClusterDiscovery implements ClusterDiscoveryCallback {
 
     @NotNull
-    private static final Logger log = LoggerFactory.getLogger(DnsClusterDiscovery.class);
+    private static final Logger log = LoggerFactory.getLogger(DCOSClusterDiscovery.class);
     @NotNull
     private final DnsDiscoveryConfigExtended discoveryConfiguration;
     @NotNull
@@ -68,7 +67,7 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
     private ClusterNodeAddress ownAddress;
 
 
-    public DnsClusterDiscovery(final @NotNull DnsDiscoveryConfigExtended discoveryConfiguration) {
+    public DCOSClusterDiscovery(final @NotNull DnsDiscoveryConfigExtended discoveryConfiguration) {
         this.eventLoopGroup = new NioEventLoopGroup();
         this.addressValidator = InetAddressValidator.getInstance();
         this.discoveryConfiguration = discoveryConfiguration;
@@ -109,13 +108,14 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
         final String queryHost = System.getenv("SCHEDULER_API_HOSTNAME") + ":" + System.getenv("SCHEDULER_API_PORT");
         String nodeCount = null;
         try {
-             nodeCount = Unirest.get(String.format("http://%s/discovery/nodeCount", queryHost)).asString().getBody();
+            nodeCount = Unirest.get(String.format("http://%s/discovery/nodeCount", queryHost)).asString().getBody();
         } catch (UnirestException e) {
-            log.warn("Node count request failed. Is the scheduler restarting?", e);
+            log.debug("Node count request failed. Is the scheduler restarting?");
+            log.trace("Query exception for node count:", e);
         }
 
-        // Fallback: Get node count. exposed as env, rendered from config
-        if(nodeCount == null) {
+        // Fallback: Get node count. Exposed as env, rendered from config. Send requests to lower pods.
+        if (nodeCount == null) {
             nodeCount = System.getenv("POD_INSTANCE_INDEX");
         }
 
@@ -151,7 +151,7 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
         final Future<List<DnsRecord>> records = resolver.resolveAll(new DefaultDnsQuestion(discoveryAddress, DnsRecordType.SRV));
         try {
             final List<DnsRecord> recordList = records.get(discoveryTimeout, TimeUnit.SECONDS);
-            // FIXME refactor this, return futures instead and wait/collect on all of them in parallel
+            // TODO refactor this, return futures instead and wait/collect on all of them in parallel
             return recordList.stream()
                     .map(this::decodeServiceRecord)
                     .filter(Objects::nonNull)

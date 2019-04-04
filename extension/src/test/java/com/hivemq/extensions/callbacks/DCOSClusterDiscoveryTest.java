@@ -22,19 +22,17 @@ import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryO
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
 import com.hivemq.extensions.configuration.DnsDiscoveryConfigExtended;
 import org.junit.Before;
-import org.junit.Test;
 import org.mockito.Mock;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class DnsClusterDiscoveryTest {
+public class DCOSClusterDiscoveryTest {
 
-    DnsClusterDiscovery dnsClusterDiscovery;
+    DCOSClusterDiscovery DCOSClusterDiscovery;
 
     @Mock
     DnsDiscoveryConfigExtended configuration;
@@ -89,7 +87,7 @@ public class DnsClusterDiscoveryTest {
     @Before
     public void setUp() {
         initMocks(this);
-        dnsClusterDiscovery = new DnsClusterDiscovery(configuration);
+        DCOSClusterDiscovery = new DCOSClusterDiscovery(configuration);
     }
 
     // FIXME need to rework this test if even possible for the DCOS extension.
