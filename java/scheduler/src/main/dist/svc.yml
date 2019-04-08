@@ -7,8 +7,8 @@ pods:
     count: {{NODE_COUNT}}
     placement: '{{{NODE_PLACEMENT}}}'
     {{#ENABLE_VIRTUAL_NETWORK}}
-      networks:
-        {{VIRTUAL_NETWORK_NAME}}:
+    networks:
+      {{VIRTUAL_NETWORK_NAME}}:
     labels: {{VIRTUAL_NETWORK_PLUGIN_LABELS}}
     {{/ENABLE_VIRTUAL_NETWORK}}
     resource-sets:
@@ -26,7 +26,7 @@ pods:
       - {{HIVEMQ_URI}}
       - {{BOOTSTRAP_URI}}
       {{#TASKCFG_ALL_ENABLE_RBAC}}
-      - {{HIVEMQ_RBAC_URI}}
+         - {{HIVEMQ_RBAC_URI}}
       {{/TASKCFG_ALL_ENABLE_RBAC}}
     volume:
       path: "hivemq-data"
@@ -82,29 +82,87 @@ pods:
           logback:
             template: logback.xml
             dest: hivemq-data/conf/logback.xml
+          config:
+            template: config.xml.mustache
+            dest: hivemq-data/conf/config.xml
         discovery:
           prefix: {{FRAMEWORK_NAME}}
-        env:
-          HIVEMQ_DNS_DISCOVERY_INTERVAL: 90
         health-check:
-          cmd: "exec $MESOS_SANDBOX/hivemq/bin/healthcheck"
+          cmd: |
+            # We just check if the MQTT port is open
+            $(echo > /dev/tcp/localhost/${HIVEMQ_MQTT_PORT})
           interval: 60
           grace-period: 60
           max-consecutive-failures: 60
           delay: 10
           timeout: 30
         readiness-check:
-          cmd: "exec $MESOS_SANDBOX/hivemq/bin/healthcheck"
+          cmd: |
+            set -e
+            set -o xtrace
+
+            $(echo > /dev/tcp/localhost/${HIVEMQ_MQTT_PORT})
+            # TODO this needs to be checked or we are not production ready! potentially losing replicas at the moment.
+            # We can also ensure the cluster is the correct size for initial readiness. At the moment, we have to do this by parsing the log file unfortunately
+            # We can only do this when rolling upgrade works though, as the condition is only met when node count is incremented during upgrade, which is currently not the case (upgrade node is last, therefore the deployment cannot complete)
+            #cluster_message=$(cat hivemq-data/log/hivemq.log | grep "Cluster size" | tail -n1)
+            #cluster_size=$(echo ${cluster_message} | sed -e "s|.* Cluster size = ||" | sed -e "s|, members.*||")
+            #if (( {{NODE_COUNT}} >= ${cluster_size} )); then
+            #  exit 0
+            #fi
           interval: 60
           delay: 30
           timeout: 30
+        {{#TASKCFG_ALL_HIVEMQ_TLS_LISTENER_ENABLED}}
+        transport-encryption:
+            - name: node
+              type: KEYSTORE
+        {{/TASKCFG_ALL_HIVEMQ_TLS_LISTENER_ENABLED}}
         ports:
           mqtt:
-            port: 0
+            port: {{TASKCFG_ALL_HIVEMQ_MQTT_PORT_CONF}}
             env-key: HIVEMQ_MQTT_PORT
             advertise: true
             vip:
               port: 1883
+          {{#TASKCFG_ALL_HIVEMQ_TLS_LISTENER_ENABLED}}
+          mqtt-tls:
+            port: {{ TASKCFG_ALL_HIVEMQ_TLS_MQTT_PORT_CONF }}
+            advertise: true
+            env-key: HIVEMQ_TLS_MQTT_PORT
+            {{#TASKCFG_ALL_HIVEMQ_TLS_MQTT_PORT_VIP_ENABLED}}
+            vip:
+              port: {{ TASKCFG_ALL_HIVEMQ_TLS_MQTT_PORT_VIP }}
+            {{/TASKCFG_ALL_HIVEMQ_TLS_MQTT_PORT_VIP_ENABLED}}
+          {{#TASKCFG_ALL_HIVEMQ_WEBSOCKET_ENABLED}}
+          websocket-tls:
+            port: {{ TASKCFG_ALL_HIVEMQ_WEBSOCKET_TLS_PORT_CONF }}
+            advertise: true
+            env-key: HIVEMQ_TLS_WS_PORT
+          {{#TASKCFG_ALL_HIVEMQ_WEBSOCKET_TLS_PORT_VIP_ENABLED}}
+            vip:
+              port: {{ TASKCFG_ALL_HIVEMQ_WEBSOCKET_TLS_PORT_VIP }}
+            {{/TASKCFG_ALL_HIVEMQ_WEBSOCKET_TLS_PORT_VIP_ENABLED}}
+          {{/TASKCFG_ALL_HIVEMQ_WEBSOCKET_ENABLED}}
+          {{#TASKCFG_ALL_HIVEMQ_CONTROL_CENTER_ENABLED}}
+          control-center-tls:
+            port: {{ TASKCFG_ALL_HIVEMQ_CC_PORT_CONF }}
+            advertise: true
+            env-key: HIVEMQ_CC_TLS_PORT
+            # TODO env-key here, config.xml templating
+          {{/TASKCFG_ALL_HIVEMQ_CONTROL_CENTER_ENABLED}}
+          {{/TASKCFG_ALL_HIVEMQ_TLS_LISTENER_ENABLED}}
+          {{#TASKCFG_ALL_HIVEMQ_WEBSOCKET_ENABLED}}
+          websocket:
+            port: {{ TASKCFG_ALL_HIVEMQ_WEBSOCKET_PORT_CONF }}
+            advertise: true
+            env-key: HIVEMQ_WEBSOCKET_PORT
+            {{#TASKCFG_ALL_HIVEMQ_WEBSOCKET_PORT_VIP_ENABLED}}
+            vip:
+              prefix: websocket
+              port: {{ TASKCFG_ALL_HIVEMQ_WEBSOCKET_PORT_VIP }}
+            {{/TASKCFG_ALL_HIVEMQ_WEBSOCKET_PORT_VIP_ENABLED}}
+          {{/TASKCFG_ALL_HIVEMQ_WEBSOCKET_ENABLED}}
           cluster:
             port: 0
             env-key: HIVEMQ_CLUSTER_PORT
@@ -116,7 +174,7 @@ pods:
           api:
             port: 0
             env-key: HIVEMQ_REST_PORT
-      # add plugin via URL
+      # add extension via URL
       add-extension:
         goal: ONCE
         resource-set: sidecar-resources

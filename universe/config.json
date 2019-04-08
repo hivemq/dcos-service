@@ -6,10 +6,11 @@
       "description": "DC/OS service configuration properties",
       "properties": {
         "name": {
-          "description": "The name of the service instance",
+          "description": "Unique name for the HiveMQ service instance consisting of a series of words separated by slashes. Each word must be at least 1 alphanumeric character and may only contain digits (`0-9`), dashes (`-`), dots (`.`), and lowercase letters (`a-z`). The word may not begin or end with a dash",
           "type": "string",
           "default": "hivemq",
-          "title": "Service name"
+          "title": "Service name",
+          "pattern": "^(\\/?((\\.\\.)|(([a-z0-9]|[a-z0-9][a-z0-9\\-]*[a-z0-9])\\.)*([a-z0-9]|[a-z0-9][a-z0-9\\-]*[a-z0-9]))?($|\\/))+$"
         },
         "user": {
           "description": "The user that the service will run as.",
@@ -100,7 +101,8 @@
           "title": "Memory size (MB)",
           "description": "hivemq pod mem requirements (in MB)",
           "type": "integer",
-          "default": 512
+          "default": 1024,
+          "minimum": 1024
         },
         "disk": {
           "title": "Disk size (MB)",
@@ -140,6 +142,10 @@
               }
             }
           }
+        },
+        "custom_domain": {
+          "type": "string",
+          "description": "A custom domain to be used in place of autoip.dcos.thisdcos.directory. This can be used to expose the service securely outside of the cluster, but requires setting up external DNS. See the service documentation for details."
         }
       },
       "required": [
@@ -178,6 +184,126 @@
           "type": "string",
           "description": "Add a (base64 encoded) license at startup, leave empty to start in evaluation mode",
           "default": ""
+        },
+        "cluster_tls_enabled": {
+          "description": "Enable TLS for HiveMQ cluster transports. Make sure that your TLS settings are correct (Service Account and secret). Changing this option at runtime may lead to data-loss",
+          "type": "boolean",
+          "default": false
+        },
+        "native_tls_enabled": {
+          "description": "When TLS is enabled: specify whether to use native TLS",
+          "type": "boolean",
+          "default": false
+        },
+        "listener_configuration": {
+          "description": "Configure HiveMQ listeners",
+          "type": "object",
+          "properties": {
+            "mqtt_port": {
+              "description": "MQTT port to use on the individual cluster nodes. A random port is chosen by default.",
+              "type": "integer",
+              "default": 0
+            },
+
+            "websocket_enabled": {
+              "title": "Enable WebSocket listener",
+              "description": "Enable WebSocket listener",
+              "type": "boolean",
+              "default": false
+            },
+            "websocket_path": {
+              "title": "WebSocket path",
+              "description": "WebSocket path",
+              "type": "string",
+              "default": "/mqtt"
+            },
+            "websocket_port": {
+              "description": "When WebSocket is enabled: Port to use for the WebSocket listener",
+              "type": "integer",
+              "default": 8083
+            },
+            "websocket_port_vip_enabled": {
+              "description": "Whether to enable the VIP for the MQTT TLS port",
+              "type": "boolean",
+              "default": false
+            },
+            "websocket_port_vip": {
+              "description": "When WebSocket is enabled: Port to use for the VIP for the WebSocket port",
+              "type": "integer",
+              "default": 8083
+            },
+
+
+            "mqtt_tls_enabled": {
+              "description": "Enable TLS listeners for MQTT clients (default and WebSocket if enabled)",
+              "type": "boolean",
+              "default": false
+            },
+            "mqtt_tls_port": {
+              "description": "When TLS is enabled: Port to use for the MQTT TLS port",
+              "type": "integer",
+              "default": 8883
+            },
+            "mqtt_tls_port_vip_enabled": {
+              "description": "Whether to enable the VIP for the MQTT TLS port",
+              "type": "boolean",
+              "default": true
+            },
+            "mqtt_tls_port_vip": {
+              "description": "When TLS and the VIP are enabled: Port to use for the VIP for the MQTT TLS port",
+              "type": "integer",
+              "default": 8883
+            },
+
+            "websocket_tls_port": {
+              "description": "When WebSocket and TLS is enabled: Port to use for the VIP for the WebSocket TLS port",
+              "type": "integer",
+              "default": 8443
+            },
+            "websocket_tls_port_vip_enabled": {
+              "description": "Whether to enable the VIP for the WebSocket TLS port",
+              "type": "boolean",
+              "default": false
+            },
+            "websocket_tls_port_vip": {
+              "description": "When TLS, the VIP and WebSocket are enabled: Port to use for the VIP for the WebSocket TLS port",
+              "type": "integer",
+              "default": 8443
+            },
+
+            "control_center_tls_enabled": {
+              "description": "Whether to enable the VIP for the WebSocket TLS port",
+              "type": "boolean",
+              "default": false
+            },
+            "control_center_tls_port": {
+              "description": "When TLS is enabled: Port for the Control Center TLS listener",
+              "type": "integer",
+              "default": 8444
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "mqtt_port",
+
+            "websocket_enabled",
+            "websocket_path",
+            "websocket_port",
+            "websocket_port_vip_enabled",
+            "websocket_port_vip",
+
+            "mqtt_tls_enabled",
+            "mqtt_tls_port",
+            "mqtt_tls_port_vip_enabled",
+            "mqtt_tls_port_vip",
+
+            "websocket_tls_port",
+            "websocket_tls_port_vip_enabled",
+            "websocket_tls_port_vip",
+
+            "control_center_tls_enabled",
+            "control_center_tls_port"
+          ]
         },
         "cluster_replica_count": {
           "title": "Cluster replica count",
@@ -222,6 +348,12 @@
           "type": "integer",
           "default": 5,
           "minimum": 1
+        },
+        "discovery_interval": {
+          "title": "Discovery interval",
+          "description": "Interval within which running nodes will attempt to discover new nodes. This should be fairly low as to allow nodes to quickly discover each other and merge during a rolling update",
+          "type": "integer",
+          "default": 5
         },
         "restrictions": {
           "description": "Restrictions to limit the load on a broker",
@@ -278,7 +410,12 @@
         "control_center_user",
         "control_center_password",
         "restrictions",
-        "java_options"
+        "java_options",
+        "cluster_tls_enabled",
+        "native_tls_enabled",
+        "metrics_enabled",
+        "metrics_interval",
+        "discovery_interval"
       ]
     },
     "mqtt": {
@@ -465,7 +602,7 @@
                 "binaryEncoding": "base64",
                 "type": "application/x-yaml"
               },
-              "default": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/Pgo8ZXh0ZW5zaW9uLWNvbmZpZ3VyYXRpb24+CgogICAgPCEtLSBSZWxvYWQgaW50ZXJ2YWwgZm9yIGNyZWRlbnRpYWxzIGluIHNlY29uZHMgLS0+CiAgICA8Y3JlZGVudGlhbHMtcmVsb2FkLWludGVydmFsPjYwPC9jcmVkZW50aWFscy1yZWxvYWQtaW50ZXJ2YWw+CgogICAgPCEtLSBJZiB0aGUgY3JlZGVudGlhbHMgZmlsZSBpcyB1c2luZyBIQVNIRUQgb3IgUExBSU4gcGFzc3dvcmRzIC0tPgogICAgPHBhc3N3b3JkLXR5cGU+UExBSU48L3Bhc3N3b3JkLXR5cGU+Cgo8L2V4dGVuc2lvbi1jb25maWd1cmF0aW9uPgo="
+              "default": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/Pgo8ZXh0ZW5zaW9uLWNvbmZpZ3VyYXRpb24+CgogICAgPCEtLSBSZWxvYWQgaW50ZXJ2YWwgZm9yIGNyZWRlbnRpYWxzIGluIHNlY29uZHMgLS0+CiAgICA8Y3JlZGVudGlhbHMtcmVsb2FkLWludGVydmFsPjYwPC9jcmVkZW50aWFscy1yZWxvYWQtaW50ZXJ2YWw+CgogICAgPCEtLSBJZiB0aGUgY3JlZGVudGlhbHMgZmlsZSBpcyB1c2luZyBIQVNIRUQgb3IgUExBSU4gcGFzc3dvcmRzIC0tPgogICAgPHBhc3N3b3JkLXR5cGU+SEFTSEVEPC9wYXNzd29yZC10eXBlPgoKPC9leHRlbnNpb24tY29uZmlndXJhdGlvbj4="
             }
           },
           "additionalProperties": false,

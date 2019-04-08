@@ -1,7 +1,6 @@
 package com.mesosphere.sdk.operator.scheduler.scheduler;
 // copied from com.mesosphere.sdk.scheduler.SchedulerBuilder - only modified to use Customized* classes
 
-import com.google.common.collect.Lists;
 import com.mesosphere.sdk.debug.OfferOutcomeTrackerV2;
 import com.mesosphere.sdk.debug.PlansTracker;
 import com.mesosphere.sdk.debug.TaskStatusesTracker;
@@ -19,7 +18,6 @@ import com.mesosphere.sdk.http.endpoints.PodResource;
 import com.mesosphere.sdk.http.endpoints.StateResource;
 import com.mesosphere.sdk.http.endpoints.TaskStatusesResource;
 import com.mesosphere.sdk.http.queries.ArtifactQueries;
-import com.mesosphere.sdk.http.queries.PlansQueries;
 import com.mesosphere.sdk.http.types.EndpointProducer;
 import com.mesosphere.sdk.http.types.StringPropertyDeserializer;
 import com.mesosphere.sdk.offer.LoggingUtils;
@@ -30,6 +28,7 @@ import com.mesosphere.sdk.offer.history.OfferOutcomeTracker;
 import com.mesosphere.sdk.scheduler.AbstractScheduler;
 import com.mesosphere.sdk.scheduler.OfferResources;
 import com.mesosphere.sdk.scheduler.SchedulerConfig;
+import com.mesosphere.sdk.scheduler.decommission.DecommissionPlanFactory;
 import com.mesosphere.sdk.scheduler.plan.DecommissionPlanManager;
 import com.mesosphere.sdk.scheduler.plan.Plan;
 import com.mesosphere.sdk.scheduler.plan.PlanCoordinator;
@@ -70,7 +69,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.mesosphere.sdk.operator.scheduler.scheduler.CustomizedSchedulerBuilder.*;
+import static com.mesosphere.sdk.operator.scheduler.scheduler.CustomizedSchedulerBuilder.ROLLING_UPDATE_PERSISTER_PATH;
+import static com.mesosphere.sdk.operator.scheduler.scheduler.CustomizedSchedulerBuilder.ROLLING_UPDATE_STATUS_DONE;
 
 /**
  * This scheduler when provided with a ServiceSpec will deploy the service and recover from encountered faults
@@ -121,30 +121,32 @@ public class CustomizedDefaultScheduler extends AbstractScheduler {
     private final PlanScheduler planScheduler;
 
     /**
-     * Creates a new {@link SchedulerBuilder} based on the provided {@link ServiceSpec} describing the service,
+     * Creates a new {@link CustomizedSchedulerBuilder} based on the provided {@link ServiceSpec} describing the service,
      * including details such as the service name, the pods/tasks to be deployed, and the plans describing how the
      * deployment should be organized.
      */
     public static CustomizedSchedulerBuilder newBuilder(
             ServiceSpec serviceSpec,
-            SchedulerConfig schedulerConfig) throws PersisterException {
+            SchedulerConfig schedulerConfig) throws PersisterException
+    {
         return new CustomizedSchedulerBuilder(serviceSpec, schedulerConfig);
     }
 
     /**
-     * Creates a new {@link SchedulerBuilder} based on the provided {@link ServiceSpec} describing the service,
+     * Creates a new {@link CustomizedSchedulerBuilder} based on the provided {@link ServiceSpec} describing the service,
      * including details such as the service name, the pods/tasks to be deployed, and the plans describing how the
      * deployment should be organized.
      */
     public static CustomizedSchedulerBuilder newBuilder(
             ServiceSpec serviceSpec,
             SchedulerConfig schedulerConfig,
-            Persister persister) throws PersisterException {
+            Persister persister) throws PersisterException
+    {
         return new CustomizedSchedulerBuilder(serviceSpec, schedulerConfig, persister);
     }
 
     /**
-     * Creates a new DefaultScheduler. See information about parameters in {@link SchedulerBuilder}.
+     * Creates a new CustomizedDefaultScheduler. See information about parameters in {@link CustomizedSchedulerBuilder}.
      */
     protected CustomizedDefaultScheduler(
             ServiceSpec serviceSpec,
@@ -157,7 +159,8 @@ public class CustomizedDefaultScheduler extends AbstractScheduler {
             StateStore stateStore,
             ConfigStore<ServiceSpec> configStore,
             ArtifactQueries.TemplateUrlFactory templateUrlFactory,
-            Map<String, EndpointProducer> customEndpointProducers) throws ConfigStoreException {
+            Map<String, EndpointProducer> customEndpointProducers) throws ConfigStoreException
+    {
         super(serviceSpec, schedulerConfig, stateStore, planCoordinator, planCustomizer, namespace);
         this.logger = LoggingUtils.getLogger(getClass(), namespace);
         this.namespace = namespace;
@@ -195,8 +198,6 @@ public class CustomizedDefaultScheduler extends AbstractScheduler {
         this.offerOutcomeTrackerV2 = namespace.isPresent() ? Optional.empty() : Optional.of(new OfferOutcomeTrackerV2());
         this.statusesTracker = Optional.of(new TaskStatusesTracker(getPlanCoordinator(), stateStore));
 
-        customizePlans();
-
         this.planScheduler = new PlanScheduler(
                 new OfferEvaluator(
                         frameworkStore,
@@ -211,6 +212,7 @@ public class CustomizedDefaultScheduler extends AbstractScheduler {
                 stateStore,
                 namespace);
 
+        customizePlans();
         this.plansTracker = Optional.of(new PlansTracker(getPlanCoordinator(), stateStore));
     }
 
@@ -306,7 +308,8 @@ public class CustomizedDefaultScheduler extends AbstractScheduler {
             // Service has a FINISH goal state, and deployment+recovery are complete. Tell upstream to uninstall us.
             return ClientStatusResponse.readyToUninstall();
         } else if (!deployCompleted
-                || isReplacing(recoveryPlanManager)) {
+                || isReplacing(recoveryPlanManager))
+        {
             // Service is acquiring footprint, either via initial deployment or via replacing a task
             return ClientStatusResponse.footprint(workSetTracker.hasNewWork());
         } else if (getPlanCoordinator().getPlanManagers().stream().anyMatch(pm -> isWorking(pm.getPlan()))) {
@@ -442,7 +445,8 @@ public class CustomizedDefaultScheduler extends AbstractScheduler {
             PersistentLaunchRecorder launchRecorder,
             Optional<UninstallRecorder> decommissionRecorder,
             Collection<Protos.Offer> offers,
-            Collection<Step> steps) {
+            Collection<Step> steps)
+    {
         // See which offers are useful to the plans, then omit the ones that shouldn't be launched.
         List<OfferRecommendation> offerRecommendations = planScheduler.resourceOffers(offers, steps);
 
@@ -498,7 +502,7 @@ public class CustomizedDefaultScheduler extends AbstractScheduler {
                     .filter(taskInfo ->
                             !FailureUtils.isPermanentlyFailed(taskInfo) &&
                                     !stateStore.fetchGoalOverrideStatus(taskInfo.getName())
-                                            .equals(CustomizedDecommissionPlanFactory.DECOMMISSIONING_STATUS))
+                                            .equals(DecommissionPlanFactory.DECOMMISSIONING_STATUS))
                     .map(taskInfo -> ResourceUtils.getResourceIds(ResourceUtils.getAllResources(taskInfo)))
                     .flatMap(Collection::stream)
                     .collect(Collectors.toSet());
@@ -558,7 +562,8 @@ public class CustomizedDefaultScheduler extends AbstractScheduler {
         if (status.hasContainerStatus() &&
                 status.getContainerStatus().getNetworkInfosCount() > 0 &&
                 status.getContainerStatus().getNetworkInfosList().stream()
-                        .anyMatch(networkInfo -> networkInfo.getIpAddressesCount() > 0)) {
+                        .anyMatch(networkInfo -> networkInfo.getIpAddressesCount() > 0))
+        {
             // Map the TaskStatus to a TaskInfo. The map will throw a StateStoreException if no such TaskInfo exists.
             try {
                 StateStoreUtils.storeTaskStatusAsProperty(stateStore, taskName, status);

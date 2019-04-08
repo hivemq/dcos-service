@@ -24,7 +24,7 @@ import com.hivemq.extension.sdk.api.parameter.ExtensionStartOutput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopInput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopOutput;
 import com.hivemq.extension.sdk.api.services.Services;
-import com.hivemq.extensions.callbacks.DnsClusterDiscovery;
+import com.hivemq.extensions.callbacks.DCOSClusterDiscovery;
 import com.hivemq.extensions.configuration.ConfigurationReader;
 import com.hivemq.extensions.configuration.DnsDiscoveryConfigExtended;
 import com.hivemq.extensions.metrics.StatsDMetrics;
@@ -52,7 +52,7 @@ public class DCOSExtensionMainClass implements ExtensionMain {
                 extensionStartOutput.preventExtensionStartup("Unspecified error occurred while reading configuration");
                 return;
             }
-            Services.clusterService().addDiscoveryCallback(new DnsClusterDiscovery(new DnsDiscoveryConfigExtended(configurationReader)));
+            Services.clusterService().addDiscoveryCallback(new DCOSClusterDiscovery(new DnsDiscoveryConfigExtended(configurationReader)));
             restService = new RestService();
             restService.start();
             final String metricsEnabled = System.getenv("HIVEMQ_METRICS_ENABLED");

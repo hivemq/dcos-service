@@ -27,16 +27,4 @@ function build() {
     set +e
 }
 
-function reinstall() {
-    echo "uninstalling previous version"
-    dcos package uninstall hivemq --yes
-    while (( $(dcos task | grep hivemq | wc -l) > 0 )); do
-        echo "Framework not yet uninstalled"
-        sleep 2
-    done
-    echo "reinstalling..."
-    dcos package install hivemq --yes
-}
-
 build
-reinstall

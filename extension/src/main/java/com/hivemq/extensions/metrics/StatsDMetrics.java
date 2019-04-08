@@ -1,7 +1,7 @@
 package com.hivemq.extensions.metrics;
 
 import com.codahale.metrics.MetricRegistry;
-import com.hivemq.extensions.callbacks.DnsClusterDiscovery;
+import com.hivemq.extensions.callbacks.DCOSClusterDiscovery;
 import com.readytalk.metrics.StatsDReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  * @author Simon Baier
  */
 public class StatsDMetrics {
-    private static final Logger log = LoggerFactory.getLogger(DnsClusterDiscovery.class);
+    private static final Logger log = LoggerFactory.getLogger(DCOSClusterDiscovery.class);
 
     private final MetricRegistry metricRegistry;
     private StatsDReporter reporter;
@@ -33,7 +33,7 @@ public class StatsDMetrics {
             final int interval = Integer.parseInt(intervalString);
             reporter = StatsDReporter.forRegistry(metricRegistry)
                     .build(host, port);
-            log.debug("Starting StatsD with interval {}, host '{}', port '{}'", interval, host, port);
+            log.debug("Starting StatsD reporter with interval '{}s', host '{}', port '{}'", interval, host, port);
             reporter.start(interval, TimeUnit.SECONDS);
         } else {
             log.error("Could not start StatsD metrics reporter. RestService information is missing. Host: {}, Port: {}", host, portString);

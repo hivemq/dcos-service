@@ -3,14 +3,78 @@
         xsi:noNamespaceSchemaLocation="hivemq-config.xsd">
 
     <listeners>
+        <!-- Default listener, always enabled -->
         <tcp-listener>
             <port>${HIVEMQ_MQTT_PORT}</port>
             <bind-address>0.0.0.0</bind-address>
         </tcp-listener>
         <!-- TODO templating TLS /WS / WSS listener, overload protection...-->
-
-
+        <!-- TLS TCP -->
+        {{#HIVEMQ_TLS_LISTENER_ENABLED}}
+            <tls-tcp-listener>
+                <port>${HIVEMQ_TLS_MQTT_PORT}</port>
+                <bind-address>0.0.0.0</bind-address>
+                <tls>
+                    <keystore>
+                        <path>{{MESOS_SANDBOX}}/node.keystore</path>
+                        <password>notsecure</password>
+                        <private-key-password>notsecure</private-key-password>
+                    </keystore>
+                    <truststore>
+                        <path>{{MESOS_SANDBOX}}/node.truststore</path>
+                        <password>notsecure</password>
+                    </truststore>
+                    <client-authentication-mode>NONE</client-authentication-mode>
+                </tls>
+            </tls-tcp-listener>
+        {{/HIVEMQ_TLS_LISTENER_ENABLED}}
+        <!-- native WS -->
+        {{#HIVEMQ_WEBSOCKET_ENABLED}}
+            <websocket-listener>
+                <port>${HIVEMQ_WEBSOCKET_PORT}</port>
+                <bind-address>0.0.0.0</bind-address>
+                <path>${HIVEMQ_WEBSOCKET_PATH}</path>
+                <subprotocols>
+                    <subprotocol>mqttv3.1</subprotocol>
+                    <subprotocol>mqtt</subprotocol>
+                </subprotocols>
+                <allow-extensions>true</allow-extensions>
+            </websocket-listener>
+        {{/HIVEMQ_WEBSOCKET_ENABLED}}
+        <!-- TLS-WS -->
+        {{#HIVEMQ_TLS_LISTENER_ENABLED}}
+            {{#HIVEMQ_WEBSOCKET_ENABLED}}
+                <tls-websocket-listener>
+                    <port>${HIVEMQ_TLS_WS_PORT}</port>
+                    <bind-address>0.0.0.0</bind-address>
+                    <path>${HIVEMQ_WS_PATH}</path>
+                    <subprotocols>
+                        <subprotocol>mqttv3.1</subprotocol>
+                        <subprotocol>mqtt</subprotocol>
+                    </subprotocols>
+                    <allow-extensions>true</allow-extensions>
+                    <tls>
+                        <keystore>
+                            <path>{{MESOS_SANDBOX}}/node.keystore</path>
+                            <password>notsecure</password>
+                            <private-key-password>notsecure</private-key-password>
+                        </keystore>
+                        <truststore>
+                            <path>{{MESOS_SANDBOX}}/node.truststore</path>
+                            <password>notsecure</password>
+                            <private-key-password>notsecure</private-key-password>
+                        </truststore>
+                        <client-authentication-mode>NONE</client-authentication-mode>
+                    </tls>
+                </tls-websocket-listener>
+            {{/HIVEMQ_WEBSOCKET_ENABLED}}
+        {{/HIVEMQ_TLS_LISTENER_ENABLED}}
     </listeners>
+
+    <tls>
+        <native-ssl>${HIVEMQ_NATIVE_TLS_ENABLED}</native-ssl>
+    </tls>
+
     <control-center>
         <enabled>${HIVEMQ_CONTROL_CENTER_ENABLED}</enabled>
         <listeners>
@@ -21,10 +85,11 @@
         </listeners>
         <users>
             <user>
-                <name>${HIVEMQ_CC_USER}</name>
-                <password>${HIVEMQ_CC_PASSWORD}</password>
+                <name>${HIVEMQ_CONTROL_CENTER_USER}</name>
+                <password>${HIVEMQ_CONTROL_CENTER_PASSWORD}</password>
             </user>
         </users>
+        <!-- TODO TLS -->
     </control-center>
 
     <cluster>
@@ -32,12 +97,24 @@
             <tcp>
                 <bind-address>${MESOS_CONTAINER_IP}</bind-address>
                 <bind-port>${HIVEMQ_CLUSTER_PORT}</bind-port>
+                <tls>
+                    <enabled>${HIVEMQ_CLUSTER_TLS_ENABLED}</enabled>
+                    <server-keystore>
+                        <path>{{MESOS_SANDBOX}}/node.keystore</path>
+                        <password>notsecure</password>
+                        <private-key-password>notsecure</private-key-password>
+                    </server-keystore>
+                    <server-certificate-truststore>
+                        <path>{{MESOS_SANDBOX}}/node.truststore</path>
+                        <password>notsecure</password>
+                    </server-certificate-truststore>
+                </tls>
             </tcp>
         </transport>
         <enabled>true</enabled>
         <discovery>
             <extension>
-                <reload-interval>${HIVEMQ_DNS_DISCOVERY_INTERVAL}</reload-interval>
+                <reload-interval>${HIVEMQ_DISCOVERY_INTERVAL}</reload-interval>
             </extension>
         </discovery>
 
@@ -77,10 +154,10 @@
             <allow-unlimited>${HIVEMQ_KEEPALIVE_ALLOW_UNLIMITED}</allow-unlimited>
         </keep-alive>
 
-       <topic-alias>
-           <enabled>${HIVEMQ_TOPIC_ALIAS_ENABLED}</enabled>
-           <max-per-client>${HIVEMQ_TOPIC_ALIAS_MAX_PER_CLIENT}</max-per-client>
-       </topic-alias>
+        <topic-alias>
+            <enabled>${HIVEMQ_TOPIC_ALIAS_ENABLED}</enabled>
+            <max-per-client>${HIVEMQ_TOPIC_ALIAS_MAX_PER_CLIENT}</max-per-client>
+        </topic-alias>
 
         <subscription-identifier>
             <enabled>${HIVEMQ_SUBSCRIPTION_IDENTIFIER_ENABLED}</enabled>

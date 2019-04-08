@@ -23,9 +23,10 @@ ext {
 }
 
 dependencies {
-    compile "mesosphere:scheduler:0.55.2"
+    compile "mesosphere:scheduler:0.55.4"
     compile group: 'io.undertow', name: 'undertow-core', version: '2.0.19.Final'
-    testCompile "mesosphere:testing:0.55.2"
+    compile group: 'io.undertow', name: 'undertow-servlet', version: '2.0.19.Final'
+    testCompile "mesosphere:testing:0.55.4"
 }
 
 distributions {
