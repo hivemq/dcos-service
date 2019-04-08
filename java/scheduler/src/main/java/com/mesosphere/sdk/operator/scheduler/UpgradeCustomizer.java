@@ -1,20 +1,19 @@
 package com.mesosphere.sdk.operator.scheduler;
 
-import com.google.common.collect.Lists;
-import com.mesosphere.sdk.framework.TaskKiller;
 import com.mesosphere.sdk.offer.Constants;
 import com.mesosphere.sdk.scheduler.plan.*;
-import com.mesosphere.sdk.scheduler.plan.strategy.*;
-import com.mesosphere.sdk.scheduler.uninstall.UninstallStep;
-import com.mesosphere.sdk.specification.*;
-import com.mesosphere.sdk.state.ConfigStore;
-import com.mesosphere.sdk.state.StateStore;
-import com.mesosphere.sdk.storage.Persister;
-import org.apache.mesos.Protos;
+import com.mesosphere.sdk.scheduler.plan.strategy.DependencyStrategyHelper;
+import com.mesosphere.sdk.scheduler.plan.strategy.SerialStrategy;
+import com.mesosphere.sdk.scheduler.plan.strategy.Strategy;
+import com.mesosphere.sdk.specification.DefaultPodSpec;
+import com.mesosphere.sdk.specification.DefaultServiceSpec;
+import com.mesosphere.sdk.specification.PodSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class UpgradeCustomizer implements PlanCustomizer {
@@ -22,10 +21,8 @@ public class UpgradeCustomizer implements PlanCustomizer {
     private final DefaultServiceSpec defaultServiceSpec;
 
     Logger log = LoggerFactory.getLogger(UpgradeCustomizer.class);
-    private StateStore stateStore;
 
-    public UpgradeCustomizer(Persister persister, DefaultServiceSpec defaultServiceSpec) {
-        this.stateStore = new StateStore(persister);
+    public UpgradeCustomizer(DefaultServiceSpec defaultServiceSpec) {
         this.reversePhaseFactory = new ReversePhaseFactory();
         this.defaultServiceSpec = defaultServiceSpec;
     }
@@ -33,14 +30,16 @@ public class UpgradeCustomizer implements PlanCustomizer {
     @Override
     public Plan updatePlan(Plan plan) {
 
-        /*if (plan.getName().equals(Constants.DEPLOY_PLAN_NAME)) {
+        log.info("initial plan: {}", plan);
+        if (plan.getName().equals(Constants.DEPLOY_PLAN_NAME)) {
             plan.getChildren().forEach(phase -> Collections.reverse(phase.getChildren()));
         }
         log.info("Modified plan: {}", plan);
-        return plan;*/
-        log.info("Received plan: {}", plan);
+        return plan;
 
-        return handleUpdatePlan(plan);
+        // log.info("Received plan: {}", plan);
+
+        //return handleUpdatePlan(plan);
     }
 
 
@@ -50,7 +49,7 @@ public class UpgradeCustomizer implements PlanCustomizer {
         for (int i = 0; i < plan.getChildren().size(); ++i) {
             final Phase phase = plan.getChildren().get(i);
             if ("rolling-upgrade".equals(phase.getName())) {
-                if(index != -1) {
+                if (index != -1) {
                     log.warn("More than one rolling upgrade phase found");
                 }
                 index = i;

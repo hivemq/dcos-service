@@ -12,6 +12,7 @@
     "MARATHON_SINGLE_INSTANCE_APP": "true",
     "DCOS_SERVICE_NAME": "{{service.name}}",
     "DCOS_SERVICE_PORT_INDEX": "0",
+    "DCOS_SERVICE_WEB_PATH": "/hivemq",
     "DCOS_SERVICE_SCHEME": "http"
   },
 {{#service.service_account_secret}}
@@ -58,6 +59,11 @@
       "MESOS_AUTHENTICATEE": "com_mesosphere_dcos_ClassicRPCAuthenticatee",
       "MESOS_HTTP_AUTHENTICATEE": "com_mesosphere_dcos_http_Authenticatee",
     {{/service.service_account_secret}}
+
+    {{#node.custom_domain}}
+      "SERVICE_TLD": "{{node.custom_domain}}",
+    {{/node.custom_domain}}
+
     "LIBMESOS_URI": "{{resource.assets.uris.libmesos-bundle-tar-gz}}",
     "RLIMIT_NOFILE_SOFT": "{{node.rlimits.rlimit_nofile.soft}}",
     "RLIMIT_NOFILE_HARD": "{{node.rlimits.rlimit_nofile.hard}}",
@@ -65,6 +71,8 @@
     "TASKCFG_ALL_HIVEMQ_JAVA_OPTS": "{{hivemq.java_options}}",
     "TASKCFG_ALL_HIVEMQ_LICENSE": "{{hivemq.license}}",
     "TASKCFG_ALL_HIVEMQ_VERSION": "4.0.2",
+    {{! The service TLD also concerns the pod instances, as this will affect service discovery when using DNS.}}
+    "TASKCFG_ALL_SERVICE_TLD": "{{node.custom_domain}}",
     {{! HiveMQ configuration injection }}
     "TASKCFG_ALL_HIVEMQ_CONTROL_CENTER_ENABLED": "{{hivemq.control_center_enabled}}",
     "TASKCFG_ALL_HIVEMQ_CC_USER": "{{hivemq.control_center_user}}",
@@ -79,23 +87,18 @@
 
     {{! listener configuration }}
     "TASKCFG_ALL_HIVEMQ_MQTT_PORT_CONF": "{{hivemq.listener_configuration.mqtt_port}}",
-
     "TASKCFG_ALL_HIVEMQ_WEBSOCKET_ENABLED": "{{hivemq.listener_configuration.websocket_enabled}}",
     "TASKCFG_ALL_HIVEMQ_WEBSOCKET_PATH": "{{hivemq.listener_configuration.websocket_path}}",
     "TASKCFG_ALL_HIVEMQ_WEBSOCKET_PORT_CONF": "{{hivemq.listener_configuration.websocket_port}}",
     "TASKCFG_ALL_HIVEMQ_WEBSOCKET_PORT_VIP_ENABLED": "{{hivemq.listener_configuration.websocket_port_vip_enabled}}",
     "TASKCFG_ALL_HIVEMQ_WEBSOCKET_PORT_VIP": "{{hivemq.listener_configuration.websocket_port_vip}}",
-
-
     "TASKCFG_ALL_HIVEMQ_TLS_LISTENER_ENABLED": "{{hivemq.listener_configuration.mqtt_tls_enabled}}",
     "TASKCFG_ALL_HIVEMQ_TLS_MQTT_PORT_CONF": "{{hivemq.listener_configuration.mqtt_tls_port}}",
     "TASKCFG_ALL_HIVEMQ_TLS_MQTT_PORT_VIP_ENABLED": "{{hivemq.listener_configuration.mqtt_tls_port_vip_enabled}}",
     "TASKCFG_ALL_HIVEMQ_TLS_MQTT_PORT_VIP": "{{hivemq.listener_configuration.mqtt_tls_port_vip}}",
-
     "TASKCFG_ALL_HIVEMQ_WEBSOCKET_TLS_PORT_CONF": "{{hivemq.listener_configuration.websocket_tls_port}}",
     "TASKCFG_ALL_HIVEMQ_WEBSOCKET_TLS_PORT_VIP_ENABLED": "{{hivemq.listener_configuration.websocket_tls_port_vip_enabled}}",
     "TASKCFG_ALL_HIVEMQ_WEBSOCKET_TLS_PORT_VIP": "{{hivemq.listener_configuration.websocket_tls_port_vip}}",
-
     "TASKCFG_ALL_HIVEMQ_CC_LISTENER_ENABLED": "{{hivemq.listener_configuration.control_center_tls_enabled}}",
     "TASKCFG_ALL_HIVEMQ_CC_PORT_CONF": "{{hivemq.listener_configuration.control_center_tls_port}}",
 

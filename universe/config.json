@@ -6,10 +6,11 @@
       "description": "DC/OS service configuration properties",
       "properties": {
         "name": {
-          "description": "The name of the service instance",
+          "description": "Unique name for the HiveMQ service instance consisting of a series of words separated by slashes. Each word must be at least 1 alphanumeric character and may only contain digits (`0-9`), dashes (`-`), dots (`.`), and lowercase letters (`a-z`). The word may not begin or end with a dash",
           "type": "string",
           "default": "hivemq",
-          "title": "Service name"
+          "title": "Service name",
+          "pattern": "^(\\/?((\\.\\.)|(([a-z0-9]|[a-z0-9][a-z0-9\\-]*[a-z0-9])\\.)*([a-z0-9]|[a-z0-9][a-z0-9\\-]*[a-z0-9]))?($|\\/))+$"
         },
         "user": {
           "description": "The user that the service will run as.",
@@ -100,7 +101,8 @@
           "title": "Memory size (MB)",
           "description": "hivemq pod mem requirements (in MB)",
           "type": "integer",
-          "default": 512
+          "default": 1024,
+          "minimum": 1024
         },
         "disk": {
           "title": "Disk size (MB)",
@@ -140,6 +142,10 @@
               }
             }
           }
+        },
+        "custom_domain": {
+          "type": "string",
+          "description": "A custom domain to be used in place of autoip.dcos.thisdcos.directory. This can be used to expose the service securely outside of the cluster, but requires setting up external DNS. See the service documentation for details."
         }
       },
       "required": [

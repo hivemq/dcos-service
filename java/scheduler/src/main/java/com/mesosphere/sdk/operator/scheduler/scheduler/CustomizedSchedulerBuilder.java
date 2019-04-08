@@ -20,10 +20,7 @@ import com.mesosphere.sdk.offer.evaluate.placement.IsLocalRegionRule;
 import com.mesosphere.sdk.offer.evaluate.placement.PlacementRule;
 import com.mesosphere.sdk.offer.evaluate.placement.PlacementUtils;
 import com.mesosphere.sdk.offer.evaluate.placement.RegionRuleFactory;
-import com.mesosphere.sdk.scheduler.AbstractScheduler;
-import com.mesosphere.sdk.scheduler.DefaultScheduler;
-import com.mesosphere.sdk.scheduler.SchedulerBuilder;
-import com.mesosphere.sdk.scheduler.SchedulerConfig;
+import com.mesosphere.sdk.scheduler.*;
 import com.mesosphere.sdk.scheduler.plan.DecommissionPlanManager;
 import com.mesosphere.sdk.scheduler.plan.DefaultPhaseFactory;
 import com.mesosphere.sdk.scheduler.plan.DefaultPlan;
@@ -75,7 +72,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Creates a new {@link DefaultScheduler}.
+ * Creates a new {@link CustomizedDefaultScheduler}.
  */
 public class CustomizedSchedulerBuilder {
 
@@ -506,12 +503,12 @@ public class CustomizedSchedulerBuilder {
         configValidators.addAll(DefaultConfigValidators.getValidators(schedulerConfig));
         configValidators.addAll(customConfigValidators);
         UUID previousConfig;
-         try {
-             previousConfig = configStore.getTargetConfig();
-         } catch(ConfigStoreException ex) {
-             logger.error("No previous configuration stored. assuming no previous config exists");
-             previousConfig = null;
-         }
+        try {
+            previousConfig = configStore.getTargetConfig();
+        } catch (ConfigStoreException ex) {
+            logger.error("No previous configuration stored. assuming no previous config exists");
+            previousConfig = null;
+        }
         final ConfigurationUpdater.UpdateResult configUpdateResult =
                 updateConfig(serviceSpec, stateStore, configStore, configValidators, namespace);
         if (!configUpdateResult.getErrors().isEmpty()) {
@@ -532,17 +529,23 @@ public class CustomizedSchedulerBuilder {
         if (hasCompletedDeployment &&
                 // Assume that the spec has been updated under this condition.
                 previousConfig != null && !previousConfig.equals(configStore.getTargetConfig())) {
-            logger.info("Update detected. Updating pod spec for rolling update, phase 1: increase pod count");
-            final PodSpec pod = serviceSpec.getPods().get(0);
-            // Cheat by updating the spec before the scheduler even starts.
-            final DefaultPodSpec newPodSpec = DefaultPodSpec.newBuilder(pod).count(pod.getCount() + 1).build();
-            serviceSpec = DefaultServiceSpec.newBuilder(serviceSpec).pods(Lists.newArrayList(newPodSpec)).build();
-            try {
-                persister.set(ROLLING_UPDATE_PERSISTER_PATH, ROLLING_UPDATE_STATUS_UPDATING);
-            } catch (PersisterException ex) {
-                logger.error("Failed to set rolling update information in persister:", ex);
+            // HiveMQ Rolling upgrade logic
+            final ServiceSpec previousSpec = configStore.fetch(previousConfig);
+            if (!isScalingOut(serviceSpec, previousSpec)) {
+                logger.info("Update detected. Updating pod spec for rolling update, phase 1: increase pod count");
+                final PodSpec pod = serviceSpec.getPods().get(0);
+                // Cheat by updating the spec before the scheduler even starts.
+                final DefaultPodSpec newPodSpec = DefaultPodSpec.newBuilder(pod).count(pod.getCount() + 1).build();
+                serviceSpec = DefaultServiceSpec.newBuilder(serviceSpec).pods(Lists.newArrayList(newPodSpec)).build();
+                try {
+                    persister.set(ROLLING_UPDATE_PERSISTER_PATH, ROLLING_UPDATE_STATUS_UPDATING);
+                } catch (PersisterException ex) {
+                    logger.error("Failed to set rolling update information in persister:", ex);
+                }
+            } else {
+                logger.info("The service is scaling out. Not adding overcapacity pod instance");
             }
-        } else{
+        } else {
             logger.info("Not updating: {}, {}", configStore.getTargetConfig(), previousConfig);
             /* else {
             logger.info("Deployment hasn't completed yet");
@@ -612,6 +615,10 @@ public class CustomizedSchedulerBuilder {
                         ) :
                         ArtifactResource.getUrlFactory(serviceSpec.getName(), schedulerConfig),
                 endpointProducers);
+    }
+
+    private boolean isScalingOut(ServiceSpec serviceSpec, ServiceSpec previousSpec) {
+        return previousSpec.getPods().get(0).getCount() > serviceSpec.getPods().get(0).getCount();
     }
 
     private PlanManager getRecoveryPlanManager(

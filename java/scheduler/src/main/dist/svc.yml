@@ -7,8 +7,8 @@ pods:
     count: {{NODE_COUNT}}
     placement: '{{{NODE_PLACEMENT}}}'
     {{#ENABLE_VIRTUAL_NETWORK}}
-      networks:
-        {{VIRTUAL_NETWORK_NAME}}:
+    networks:
+      {{VIRTUAL_NETWORK_NAME}}:
     labels: {{VIRTUAL_NETWORK_PLUGIN_LABELS}}
     {{/ENABLE_VIRTUAL_NETWORK}}
     resource-sets:
