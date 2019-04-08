@@ -257,7 +257,7 @@ plans:
         pod: hivemq
         steps:
           - default: [[node]]
-  #decommission:
+  # decommission:
   #  strategy: serial
   #  phases:
   #    rolling-upgrade:
