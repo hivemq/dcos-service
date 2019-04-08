@@ -36,7 +36,7 @@ TODO ist es wirklich im extensions ordner oder doch im conf ordner?? beschreiben
 To display a list of available package versions for upgrade, run:
 
 ```
-dcos hivemq update package-versions
+$ dcos hivemq update package-versions
 ```
 
 #### Upgrading or downgrading a service
@@ -116,4 +116,4 @@ dcos security org groups add_user superusers hivemq-principal
 
 # Acknowledgements
 
-Thank you to MaibornWolff for also providing a HiveMQ DCOS service prototype. Some pieces of code for this service were taken from their implementation as well.
+Thank you to MaibornWolff for also providing a HiveMQ [DCOS service prototype](https://github.com/MaibornWolff/dcos-hivemq). Some pieces of code for this service were taken from their implementation as well.
