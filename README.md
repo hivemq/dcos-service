@@ -35,24 +35,39 @@ TODO ist es wirklich im extensions ordner oder doch im conf ordner?? beschreiben
 
 To display a list of available package versions for upgrade, run:
 
-```
+```bash
 $ dcos hivemq update package-versions
+```
+
+This will result in output such as:
+```bash
+Current package version is: 1.0.1-4.0.2
+Package can be downgraded to:
+- 1.0.1-4.0.1
+No valid package upgrade versions.
 ```
 
 #### Upgrading or downgrading a service
 
 1. Before updating the service itself, update its CLI subcommand to the new version:
 
-```
-$ dcos package uninstall --cli hivemq
-$ dcos package install --cli hivemq --package-version="<version>"
-```
+    ```bash
+    $ dcos package uninstall --cli hivemq
+    $ dcos package install --cli hivemq --package-version="<version>"
+    ```
 
 2. After the CLI subcommand has been updated, call the `update start` command, passing in the version
 
-```
-$ dcos hivemq update start --package-version="<version>"
-```
+    ```bash
+    $ dcos hivemq update start --package-version="<version>"
+    ```
+
+    This will result in output such as the following:
+    
+    ```bash
+    $ dcos hivemq update start --package-version="1.0.1-4.0.1"
+    Update started. Please use `dcos hivemq --name=hivemq update status` to view progress.
+    ``` 
 
 ## Monitoring
 

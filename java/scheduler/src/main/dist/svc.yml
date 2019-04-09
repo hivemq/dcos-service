@@ -45,9 +45,9 @@ pods:
           mkdir -p $MESOS_SANDBOX/hivemq-data/extensions
           mkdir -p $MESOS_SANDBOX/hivemq-data/conf
           mkdir -p $MESOS_SANDBOX/hivemq-data/license
-          rm -rf $MESOS_SANDBOX/hivemq-4.0.2/extensions
-          rm -rf $MESOS_SANDBOX/hivemq-4.0.2/conf
-          rm -rf $MESOS_SANDBOX/hivemq-4.0.2/license
+          rm -rf $MESOS_SANDBOX/hivemq-${HIVEMQ_VERSION}/extensions
+          rm -rf $MESOS_SANDBOX/hivemq-${HIVEMQ_VERSION}/conf
+          rm -rf $MESOS_SANDBOX/hivemq-${HIVEMQ_VERSION}/license
           ln -s $MESOS_SANDBOX/hivemq-data/extensions $MESOS_SANDBOX/hivemq/extensions
           ln -s $MESOS_SANDBOX/hivemq-data/conf $MESOS_SANDBOX/hivemq/conf
           ln -s $MESOS_SANDBOX/hivemq-data/license $MESOS_SANDBOX/hivemq/license
