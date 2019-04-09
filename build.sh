@@ -8,10 +8,10 @@ function build() {
     ./gradlew build
     echo "building extension..."
     cd ../../extension
-    mvn -P Packaging clean package
+    mvn -P Packaging package
     echo "building hivemq tool..."
     cd ../hivemq-tool
-    mvn clean package
+    mvn package
     echo "building dcos files layer..."
     cd ../
     rm dcos_files.zip || true
