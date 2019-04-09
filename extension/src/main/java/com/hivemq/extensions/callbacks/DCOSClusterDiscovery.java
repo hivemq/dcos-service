@@ -97,7 +97,8 @@ public class DCOSClusterDiscovery implements ClusterDiscoveryCallback {
         }
         // Get node count from scheduler API
         queryHost = System.getenv("SCHEDULER_API_HOSTNAME") + ":" + System.getenv("SCHEDULER_API_PORT");
-        frameworkName = System.getenv("FRAMEWORK_NAME");
+        // Get framework. For foldered service names, the separator is removed from the resulting DNS name.
+        frameworkName = System.getenv("FRAMEWORK_NAME").replace("/", "");
         loadClusterNodeAddresses(clusterDiscoveryOutput);
     }
 
