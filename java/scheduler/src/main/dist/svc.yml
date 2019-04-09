@@ -107,7 +107,7 @@ pods:
             # We can only do this when rolling upgrade works though, as the condition is only met when node count is incremented during upgrade, which is currently not the case (upgrade node is last, therefore the deployment cannot complete)
             #cluster_message=$(cat hivemq-data/log/hivemq.log | grep "Cluster size" | tail -n1)
             #cluster_size=$(echo ${cluster_message} | sed -e "s|.* Cluster size = ||" | sed -e "s|, members.*||")
-            #if (( {{NODE_COUNT}} >= ${cluster_size} )); then
+            #if (( "$(curl ${SCHEDULER_API_HOSTNAME}:${SCHEDULER_API_PORT}/discovery/nodeCount)" >= ${cluster_size} )); then
             #  exit 0
             #fi
           interval: 60
