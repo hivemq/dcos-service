@@ -111,7 +111,7 @@ public class DCOSClusterDiscovery implements ClusterDiscoveryCallback {
     }
 
     private void loadClusterNodeAddresses(final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
-        managedExtensionExecutorService.submit(new Callable<List<ClusterNodeAddress>>() {
+       /* managedExtensionExecutorService.submit(new Callable<List<ClusterNodeAddress>>() {
             @Override
             public List<ClusterNodeAddress> call() throws Exception {
                 final List<ClusterNodeAddress> clusterNodeAddresses = loadOtherNodes();
@@ -131,7 +131,15 @@ public class DCOSClusterDiscovery implements ClusterDiscoveryCallback {
                             log.error("Error occurred when discovering nodes:", throwable);
                         }
                     }
-                });
+                })*/
+
+        try {
+            final List<ClusterNodeAddress> nodeAddresses = loadOtherNodes();
+            log.trace("Found addresses: {}", nodeAddresses);
+            clusterDiscoveryOutput.provideCurrentNodes(nodeAddresses);
+        } catch (TimeoutException | InterruptedException e) {
+            log.error("Error occurred when discovering nodes:", e);
+        }
     }
 
     private List<ClusterNodeAddress> loadOtherNodes() throws TimeoutException, InterruptedException {

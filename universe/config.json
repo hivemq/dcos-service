@@ -94,14 +94,14 @@
           "title": "CPU count",
           "description": "hivemq pod CPU requirements",
           "type": "number",
-          "default": 1,
+          "default": 4,
           "minimum": 1
         },
         "mem": {
           "title": "Memory size (MB)",
           "description": "hivemq pod mem requirements (in MB)",
           "type": "integer",
-          "default": 1024,
+          "default": 4096,
           "minimum": 1024
         },
         "disk": {
