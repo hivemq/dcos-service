@@ -76,7 +76,7 @@ import java.util.stream.Collectors;
  */
 public class CustomizedSchedulerBuilder {
 
-    public static final String ROLLING_UPDATE_PERSISTER_PATH = "hivemqFramework" + PersisterUtils.PATH_DELIM + "rollingUpgradeStatus";
+    public static final String ROLLING_UPDATE_PERSISTER_PATH = System.getenv("FRAMEWORK_NAME") + "Framework" + PersisterUtils.PATH_DELIM + "rollingUpgradeStatus";
     public static final byte[] ROLLING_UPDATE_STATUS_UPDATING = "updating".getBytes();
     private static final byte[] ROLLING_UPDATE_STATUS_INITIAL_DEPLOY = "deploying".getBytes();
     public static final byte[] ROLLING_UPDATE_STATUS_DONE = "done".getBytes();

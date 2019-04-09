@@ -10,7 +10,10 @@ import com.mesosphere.sdk.operator.scheduler.api.NodeDiscovery;
 import com.mesosphere.sdk.operator.scheduler.scheduler.CustomizedDefaultScheduler;
 import com.mesosphere.sdk.operator.scheduler.scheduler.CustomizedSchedulerBuilder;
 import com.mesosphere.sdk.operator.scheduler.scheduler.CustomizedSchedulerRunner;
+import com.mesosphere.sdk.scheduler.DefaultScheduler;
+import com.mesosphere.sdk.scheduler.SchedulerBuilder;
 import com.mesosphere.sdk.scheduler.SchedulerConfig;
+import com.mesosphere.sdk.scheduler.SchedulerRunner;
 import com.mesosphere.sdk.specification.*;
 import com.mesosphere.sdk.specification.yaml.RawServiceSpec;
 import com.mesosphere.sdk.state.StateStore;
@@ -48,11 +51,39 @@ public class Main {
 
         // Read config from provided file, and assume any config templates are in the same directory as the file:
         File yamlSpecFile = new File(args[0]);
-        final CustomizedSchedulerBuilder schedulerBuilder = createSchedulerBuilder(yamlSpecFile);
+        final SchedulerBuilder schedulerBuilder = createSchedulerBuilderAlt(yamlSpecFile);
 
-        CustomizedSchedulerRunner
+        SchedulerRunner
                 .fromSchedulerBuilder(schedulerBuilder)
                 .run();
+    }
+
+
+
+    private static SchedulerBuilder createSchedulerBuilderAlt(File yamlSpecFile) throws Exception {
+        RawServiceSpec rawServiceSpec = RawServiceSpec.newBuilder(yamlSpecFile).build();
+        File configDir = yamlSpecFile.getParentFile();
+
+        SchedulerConfig schedulerConfig = SchedulerConfig.fromEnv();
+
+        final Map<String, String> env = System.getenv();
+        final DefaultServiceSpec.Generator generator = DefaultServiceSpec.newGenerator(rawServiceSpec, schedulerConfig, env, configDir);
+        final DefaultServiceSpec defaultServiceSpec = generator.build();
+        final SchedulerBuilder schedulerBuilder = DefaultScheduler.newBuilder(defaultServiceSpec, schedulerConfig);
+        setConfigValidators(schedulerBuilder);
+        schedulerBuilder.setPlansFrom(rawServiceSpec);
+
+        // If the scheduler is not in uninstall mode, then let's add the plan customizer
+        if (!schedulerConfig.isUninstallEnabled()) {
+            final UpgradeCustomizer upgradeCustomizer = new UpgradeCustomizer(defaultServiceSpec);
+            schedulerBuilder.setPlanCustomizer(upgradeCustomizer);
+        }
+
+        final Integer podCount = defaultServiceSpec.getPods().get(0).getCount();
+        final NodeDiscovery nodeDiscovery = new NodeDiscovery(podCount);
+        schedulerBuilder.setCustomResources(Lists.newArrayList(nodeDiscovery));
+
+        return schedulerBuilder;
     }
 
     private static CustomizedSchedulerBuilder createSchedulerBuilder(File yamlSpecFile) throws Exception {
@@ -84,12 +115,12 @@ public class Main {
         final DefaultServiceSpec.Generator generator = DefaultServiceSpec.newGenerator(rawServiceSpec, schedulerConfig, env, yamlSpecFile.getParentFile());
         final DefaultServiceSpec defaultServiceSpec = generator.build();
         final CustomizedSchedulerBuilder schedulerBuilder = CustomizedDefaultScheduler.newBuilder(defaultServiceSpec, schedulerConfig);
+        schedulerBuilder.setPlansFrom(rawServiceSpec);
         final Persister persister = schedulerBuilder.getPersister();
         final UpgradeCustomizer upgradeCustomizer = new UpgradeCustomizer(defaultServiceSpec);
         schedulerBuilder.setPlanCustomizer(upgradeCustomizer);
-        schedulerBuilder.setPlansFrom(rawServiceSpec);
 
-        setConfigValidators(schedulerBuilder);
+        //setConfigValidators(schedulerBuilder);
         final Integer podCount = defaultServiceSpec.getPods().get(0).getCount();
         //startProxy(apiServerPort, dashboardProxyHandler, rewriteHandler, apiProxyHandler, persister);
         final NodeDiscovery nodeDiscovery = new NodeDiscovery(podCount);
@@ -107,7 +138,7 @@ public class Main {
         undertow.start();
     }
 
-    private static void setConfigValidators(CustomizedSchedulerBuilder schedulerBuilder) {
+    private static void setConfigValidators(SchedulerBuilder schedulerBuilder) {
         final ConfigValidator<ServiceSpec> tlsConfigValidator = (oldConfig, newConfig) -> {
             List<ConfigValidationError> errors = Lists.newArrayList();
             if (oldConfig.isPresent()) {
