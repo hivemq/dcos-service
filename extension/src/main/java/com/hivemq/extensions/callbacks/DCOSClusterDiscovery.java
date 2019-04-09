@@ -89,7 +89,8 @@ public class DCOSClusterDiscovery implements ClusterDiscoveryCallback {
         managedExtensionExecutorService = Services.extensionExecutorService();
         ownAddress = clusterDiscoveryInput.getOwnAddress();
         final String serviceTldString = System.getenv("SERVICE_TLD");
-        if (serviceTldString != null) {
+        if (serviceTldString != null && !serviceTldString.isEmpty()) {
+            log.debug("Setting service TLD from environment: {}", serviceTldString);
             serviceTld = serviceTldString;
         } else {
             serviceTld = DEFAULT_SERVICE_TLD;
