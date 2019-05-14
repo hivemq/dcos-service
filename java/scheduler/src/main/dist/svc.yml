@@ -26,7 +26,7 @@ pods:
       - {{HIVEMQ_URI}}
       - {{BOOTSTRAP_URI}}
       {{#TASKCFG_ALL_ENABLE_RBAC}}
-         - {{HIVEMQ_RBAC_URI}}
+      - {{HIVEMQ_RBAC_URI}}
       {{/TASKCFG_ALL_ENABLE_RBAC}}
     volume:
       path: "hivemq-data"
@@ -180,16 +180,32 @@ pods:
         resource-set: sidecar-resources
         cmd: |
           set -e
+          set -o xtrace
 
           echo "Downloading zip from $URL"
           cd $MESOS_SANDBOX
           rm -f extension.zip 2> /dev/null
           curl $URL -o extension.zip
           mkdir -p extension_tmp
-          unzip extension.zip -d -o extension_tmp/
-          # TODO check if this is idempotent now
-          mv -u extension_tmp/* hivemq-data/extensions/
+          unzip -o extension.zip -d extension_tmp
+          # This should only update the target files if they are different
+          cp -ru extension_tmp/* hivemq-data/extensions/
           rm -rf extension_tmp
+      # delete a single extension
+      delete-extension:
+        goal: ONCE
+        resource-set: sidecar-resources
+        cmd: |
+          set -e
+          set -o xtrace
+          if [ -z "$EXTENSION" ]; then
+            echo "Must provide an extension name"
+            exit 1
+          fi
+          touch hivemq-data/extensions/$EXTENSION/DISABLED || true
+          # Wait a generous amount of time so HiveMQ can gracefully stop the extension
+          sleep 10
+          rm -rf hivemq-data/extensions/$EXTENSION
       # add license via base64 encoded file
       add-license:
         goal: ONCE
@@ -213,26 +229,26 @@ pods:
             exit 1
           fi
           echo "$FILE_CONTENT" | base64 -d > hivemq-data/extensions/$PATH
-      disable-plugin:
+      disable-extension:
         goal: ONCE
         resource-set: sidecar-resources
         cmd: |
           set -e
-          if [ -z "$PLUGIN" ]; then
-            echo "Must provide a plugin name"
+          if [ -z "$EXTENSION" ]; then
+            echo "Must provide an extension name"
             exit 1
           fi
-          touch hivemq-data/extensions/$PLUGIN/DISABLED || true
-      enable-plugin:
+          touch hivemq-data/extensions/$EXTENSION/DISABLED || true
+      enable-extension:
         goal: ONCE
         resource-set: sidecar-resources
         cmd: |
           set -e
-          if [ -z "$PLUGIN" ]; then
-            echo "Must provide a plugin name"
+          if [ -z "$EXTENSION" ]; then
+            echo "Must provide an extension name"
             exit 1
           fi
-          rm -f hivemq-data/extensions/$PLUGIN/DISABLED
+          rm -f hivemq-data/extensions/$EXTENSION/DISABLED
       decommission-task:
         goal: ONCE
         resource-set: sidecar-resources
@@ -250,7 +266,7 @@ plans:
         steps:
           - default: [[node]]
   update:
-    strategy: serial
+    strategy: parallel
     phases:
       rolling-upgrade:
         strategy: serial
@@ -273,6 +289,14 @@ plans:
         pod: hivemq
         steps:
           - default: [[add-extension]]
+  delete-extension:
+    strategy: parallel
+    phases:
+      install:
+        strategy: parallel
+        pod: hivemq
+        steps:
+          - default: [[delete-extension]]
   add-license:
     strategy: parallel
     phases:
@@ -289,19 +313,19 @@ plans:
         pod: hivemq
         steps:
           - default: [[add-config]]
-  disable-plugin:
+  disable-extension:
     strategy: parallel
     phases:
       install:
         strategy: parallel
         pod: hivemq
         steps:
-          - default: [[disable-plugin]]
-  enable-plugin:
+          - default: [[disable-extension]]
+  enable-extension:
     strategy: parallel
     phases:
       install:
         strategy: parallel
         pod: hivemq
         steps:
-          - default: [[enable-plugin]]
+          - default: [[enable-extension]]

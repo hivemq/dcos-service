@@ -95,7 +95,7 @@
           "description": "hivemq pod CPU requirements",
           "type": "number",
           "default": 4,
-          "minimum": 1
+          "minimum": 0.8
         },
         "mem": {
           "title": "Memory size (MB)",
@@ -108,7 +108,7 @@
           "title": "Disk size (MB)",
           "description": "hivemq pod persistent disk requirements (in MB)",
           "type": "integer",
-          "default": 250
+          "default": 10000
         },
         "disk_type": {
           "title": "Disk type [ROOT, MOUNT]",
@@ -219,7 +219,7 @@
             "websocket_port": {
               "description": "When WebSocket is enabled: Port to use for the WebSocket listener",
               "type": "integer",
-              "default": 8083
+              "default": 0
             },
             "websocket_port_vip_enabled": {
               "description": "Whether to enable the VIP for the MQTT TLS port",
@@ -239,7 +239,7 @@
             "mqtt_tls_port": {
               "description": "When TLS is enabled: Port to use for the MQTT TLS port",
               "type": "integer",
-              "default": 8883
+              "default": 0
             },
             "mqtt_tls_port_vip_enabled": {
               "description": "Whether to enable the VIP for the MQTT TLS port",
@@ -254,7 +254,7 @@
             "websocket_tls_port": {
               "description": "When WebSocket and TLS is enabled: Port to use for the VIP for the WebSocket TLS port",
               "type": "integer",
-              "default": 8443
+              "default": 0
             },
             "websocket_tls_port_vip_enabled": {
               "description": "Whether to enable the VIP for the WebSocket TLS port",
@@ -274,7 +274,7 @@
             "control_center_tls_port": {
               "description": "When TLS is enabled: Port for the Control Center TLS listener",
               "type": "integer",
-              "default": 8444
+              "default": 0
             }
           },
           "additionalProperties": false,
