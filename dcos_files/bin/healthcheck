@@ -3,5 +3,5 @@
 set -e
 set -o xtrace
 
-# Write to log for now
-$(echo > /dev/tcp/localhost/${HIVEMQ_MQTT_PORT}) > $MESOS_SANDBOX/hivemq/log/check.log 2>&1
+# Simple TCP health check. More sophisticated check will follow.
+$(echo > /dev/tcp/localhost/${HIVEMQ_MQTT_PORT})
