@@ -149,7 +149,6 @@ pods:
             port: {{ TASKCFG_ALL_HIVEMQ_CC_PORT_CONF }}
             advertise: true
             env-key: HIVEMQ_CC_TLS_PORT
-            # TODO env-key here, config.xml templating
           {{/TASKCFG_ALL_HIVEMQ_CONTROL_CENTER_ENABLED}}
           {{/TASKCFG_ALL_HIVEMQ_TLS_LISTENER_ENABLED}}
           {{#TASKCFG_ALL_HIVEMQ_WEBSOCKET_ENABLED}}

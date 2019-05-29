@@ -2,6 +2,8 @@
 
 Requires [dcosdev](https://github.com/mesosphere/dcosdev) for development
 
+Note: While providing many functionalities already, this service is still a work in progress.
+
 ## Managing the cluster
 
 Sidecar plans are provided to allow you to maintain the cluster at runtime, performing several common tasks.
@@ -28,8 +30,6 @@ If you did not specify a license at installation or want to add a new license to
 ### Adding extension configuration
 
 To add arbitrary configuration files for your custom extensions or update existing configurations, you can use the `add-config` plan.
-
-TODO ist es wirklich im extensions ordner oder doch im conf ordner?? beschreiben
 
 ### Upgrading
 
