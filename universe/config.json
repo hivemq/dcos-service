@@ -501,7 +501,7 @@
             },
             "queued_message_strategy": {
               "title": "Queued messages strategy",
-              "description": "Discard strategy when message arrives at the broker and the corresponding client’s message queue is full.\ndiscard for discarding newly arriving messages. discard-oldest to discard the oldest message in the queue when a new message arrives",
+              "description": "Discard strategy when message arrives at the broker and the corresponding clients message queue is full.\ndiscard for discarding newly arriving messages. discard-oldest to discard the oldest message in the queue when a new message arrives",
               "type": "string",
               "default": "discard",
               "enum": [
