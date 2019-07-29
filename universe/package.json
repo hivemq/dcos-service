@@ -7,7 +7,7 @@
   "name": "hivemq",
   "version": "{{package-version}}",
   "maintainer": "support@hivemq.com",
-  "description": "HiveMQ on DC/OS",
+  "description": "HiveMQ is a MQTT broker designed for the fast, efficient and reliable bi-directional movement of data between device and the cloud.",
   "selected": false,
   "framework": true,
   "tags": ["0.55.4", "hivemq", "mqtt", "iot"],

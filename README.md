@@ -41,7 +41,7 @@ $ dcos hivemq update package-versions
 
 This will result in output such as:
 ```bash
-Current package version is: 1.0.1-4.1.1
+Current package version is: 1.0.1-4.2.0
 Package can be downgraded to:
 - 1.0.1-4.0.2
 No valid package upgrade versions.
@@ -65,7 +65,7 @@ No valid package upgrade versions.
     This will result in output such as the following:
     
     ```bash
-    $ dcos hivemq update start --package-version="1.0.1-4.1.1"
+    $ dcos hivemq update start --package-version="1.0.1-4.2.0"
     Update started. Please use `dcos hivemq --name=hivemq update status` to view progress.
     ``` 
 
