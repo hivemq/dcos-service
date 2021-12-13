@@ -1,5 +1,8 @@
 # HiveMQ DCOS Service
 
+> **⚠ NOTE: This project is archived.**  
+> The DCOS Service is no longer maintained, due to the EOL of DCOS itself.
+
 Requires [dcosdev](https://github.com/mesosphere/dcosdev) for development
 
 Note: While providing many functionalities already, this service is still a work in progress.
